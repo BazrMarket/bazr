@@ -1,0 +1,107 @@
+# BAZR -- repository ignore rules.
+#
+# Two kinds of entry live here and they are not equally forgiving. Build output
+# that slips in is noise you can delete in the next commit. A key that slips in
+# is public forever, because a public repository is cloned, mirrored and cached
+# long before anyone notices. The secret rules come first for that reason, and
+# each one says what it is defending against, so that nobody removes a line
+# because they cannot see what it was for.
+
+# ---------------------------------------------------------------------------
+# Signing material. Nothing in this section is recoverable once it is pushed.
+#
+# The upgrade authority for the deployed program is a keypair. Whoever holds it
+# can replace the program binary at the published address, so a leak does not
+# just cost the wallet's balance -- it hands over every account the program
+# owns. The keypair is kept outside this repository and passed to each command
+# explicitly (--keypair for solana, --provider.wallet for anchor, ANCHOR_WALLET
+# for the scripts in anchor-program/scripts/). These patterns exist to catch a
+# stray copy that gets made inside the tree anyway, which is how it usually
+# happens: a file copied in for one command and then forgotten.
+# ---------------------------------------------------------------------------
+.keys/
+.deploy/
+id.json
+*-keypair.json
+*-deploy.json
+*-deployer.json
+*-wallet.json
+*-deploy*.json
+*-deployer*.json
+*-wallet*.json
+
+# idl/bazr_market.json is a committed artifact and is deliberately not matched
+# by any pattern above: it carries no key material, and it is checked in so a
+# client can be built without running `anchor build` first. Keep it that way --
+# if a future pattern here starts matching it, .github/workflows/ci.yml fails,
+# because .github/scripts/check-idl.mjs cannot read a file that is not there.
+
+# ---------------------------------------------------------------------------
+# Environment files. These hold RPC URLs with provider keys in them, which are
+# billable credentials even when they look like ordinary URLs. .env.example is
+# the exception and is meant to be committed: it documents the variable names
+# with empty or synthetic values, so a contributor knows what to set without
+# anyone having to send them a real file.
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ---------------------------------------------------------------------------
+# Generator and packaging scripts. These are local tooling and are never part
+# of a public checkout. They are listed by exact name rather than by a glob so
+# that ordinary Python in the tree still gets committed -- for example
+# tag-extension/scripts/make-icons.py, which is a real, documented build step.
+# ---------------------------------------------------------------------------
+main.py
+generator.py
+builder.py
+generate.py
+grass.py
+commit_history.py
+_docgate.py
+_docgate-exempt.txt
+
+# ---------------------------------------------------------------------------
+# Build output and dependencies. Everything below is reproducible from source,
+# and none of it should ever be reviewed in a diff.
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+build/
+out/
+coverage/
+.turbo/
+*.tgz
+
+# Rust and Anchor. `target/` is the cargo build directory; the compiled program
+# lands there as target/deploy/bazr_market.so. Cargo.lock is NOT ignored: it is
+# committed on purpose so that `cargo check --locked` in CI resolves the same
+# dependency versions a contributor gets locally.
+target/
+**/*.rs.bk
+.anchor/
+test-ledger/
+*.so
+
+# Python bytecode. Running any script in the tree leaves this behind, and it
+# has no business being counted, scanned or reviewed.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---------------------------------------------------------------------------
+# Editor, OS and local tooling leftovers.
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.log
+.vercel/
+.yarn/
+.idea/
+*.swp
+
+# Packaged extension archive. `npm run build` writes it under build/, which is
+# already ignored; this catches a copy made anywhere else.
+*.zip
