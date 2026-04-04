@@ -24,3 +24,15 @@ An `[unverified]` item is never promoted to a fact elsewhere in the
 specification. Each one is absorbed either as an explicit unknown state or as a
 reduction in the confidence attached to a label.
 
+## Method and limits
+
+- Primary sources were preferred: official documentation, papers on arXiv and
+  SSRN, and API references. Secondary blog posts were used only for cross-checking.
+- **Two arXiv PDFs could not be parsed.** For `2512.00377` (memecoin fragility,
+  a 3.2MB body) the PDF streams were compressed and body figures could not be
+  extracted. Only abstract-level framing was obtained, so anything that would
+  have depended on that body text is labelled `[unverified]`.
+- **No free canonical on-chain source of CEX wallet labels was found.** This is
+  a known bias source for the holder dispersion axis and is handled explicitly
+  in the specification rather than ignored.
+
