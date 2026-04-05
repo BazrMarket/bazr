@@ -131,3 +131,37 @@ Graduation is decided per token from the on-chain migration itself.
 
 ---
 
+## 2. Post-graduation liquidity reality
+
+### 2.1 The scale of the die-off: `[verified]` qualitatively, `[estimate]` quantitatively
+
+- **The overwhelming majority of graduated tokens lose all trading activity
+  within 48 hours.** A large share lose meaningful volume on their **first day**
+  on PumpSwap. Sources:
+  [JUMPBIT, 5 reasons tokens died](https://medium.com/@jump_bit/5-reasons-your-pump-fun-token-died-after-graduation-and-how-to-prevent-it-c04a3a1a8f9d),
+  [JUMPBIT, 30-minute playbook](https://medium.com/@jump_bit/the-30-minute-post-graduation-playbook-keep-your-pump-fun-token-alive-on-pumpswap-59c71e08ebb6)
+- **The working definition of "dead"** `[verified]`: if there is no activity, no
+  liquidity depth and no sign of life within 15 to 30 minutes of graduation, the
+  token is treated as dead in practice. Thin liquidity plus zero volume plus a
+  flat chart on a screener drives traders away permanently. Sources: JUMPBIT
+  above, [TradingView / Cointelegraph](https://tr.tradingview.com/news/cointelegraph%3A56f07a8fa094b%3A0-pump-fun-memecoins-are-dying-at-record-rates-less-than-1-survive)
+- **`[unverified]`**: the precise percentage still trading N days after
+  graduation. The qualitative claim, that most die within 24 to 48 hours, is
+  consistent across multiple sources, but **no quantitative survival curve was
+  confirmed from a primary statistic**. The failed extraction of the
+  `2512.00377` memecoin fragility PDF is the direct cause of this gap.
+  Consequence: the specification hard-codes no such percentage and instead
+  decides per token from measured trading continuity (`floor_shape`).
+
+### 2.2 What a dead pair looks like `[verified]`
+
+- Absent depth leads to no buyers, which leads to a flat chart, which leads to
+  no new attention. The loop closes on itself. Sources: both JUMPBIT articles above.
+- **Implication**: death shows up as **depth collapse plus the disappearance of
+  trades**, not as a falling price. That is why `lp_residual` (real depth on the
+  quote side) and `floor_shape` (trading continuity) carry the two largest
+  weights. Price is deliberately excluded from the axes, because a price series
+  invites exactly the forecasting reading this project refuses to make.
+
+---
+
