@@ -36,3 +36,35 @@ reduction in the confidence attached to a label.
   a known bias source for the holder dispersion axis and is handled explicitly
   in the specification rather than ignored.
 
+## How the evidence reaches the score
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#F2EFE3', 'primaryTextColor': '#3A3A38', 'primaryBorderColor': '#1F6FB2', 'lineColor': '#1F6FB2', 'secondaryColor': '#C8A87C', 'tertiaryColor': '#D9B85C', 'fontFamily': 'monospace'}}}%%
+flowchart LR
+  S2["S2 post-graduation<br/>liquidity reality"]
+  S3["S3 holder<br/>concentration methods"]
+  S4["S4 LP burn and lock"]
+  S5["S5 rug and bundle<br/>detection"]
+  S6["S6 Jupiter routing"]
+  S7["S7 pool structure<br/>and reserves"]
+
+  LP["lp_residual<br/>weight 0.30"]
+  FS["floor_shape<br/>weight 0.25"]
+  HD["holder_dispersion<br/>weight 0.20"]
+  DW["dev_wallet_state<br/>weight 0.15"]
+  SA["social_afterglow<br/>weight 0.10"]
+
+  S4 --> LP
+  S7 --> LP
+  S6 --> LP
+  S2 --> FS
+  S2 --> LP
+  S3 --> HD
+  S5 --> HD
+  S5 --> DW
+  S1["S1 launchpad<br/>landscape"] --> SA
+  S5 --> SA
+```
+
+---
+
