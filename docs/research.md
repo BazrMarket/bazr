@@ -165,3 +165,61 @@ Graduation is decided per token from the on-chain migration itself.
 
 ---
 
+## 3. Holder concentration
+
+### 3.1 Metrics in common use `[verified]`
+
+- **Top-N share**, especially top-10. A top-10 holding 30 to 50% or more of
+  supply is treated as a manipulation and dump risk; "top-10 above 30% is not
+  recommended" is the common phrasing, and a single wallet above 35% forces a
+  risk grade. Sources:
+  [Veritas Protocol](https://www.veritasprotocol.com/blog/token-holder-concentration-analysis-metrics-and-limits),
+  [BarryGuard](https://www.barryguard.com/blog/how-to-check-solana-token-rug-pull)
+- **HHI** (Herfindahl-Hirschman): the sum of squared shares, on a 0 to 10,000
+  scale, higher meaning more concentrated. Sources:
+  [CCN on HHI](https://www.ccn.com/education/crypto/hhi-index-crypto-market-analysis/),
+  [Bitquery on wealth distribution](https://bitquery.io/blog/wealth-distribution-in-token-economy)
+- **Gini** (0 to 1) for inequality, and **Nakamoto coefficient**, the smallest
+  number of wallets that together hold more than 51% of supply. Source:
+  [Bitquery](https://bitquery.io/blog/wealth-distribution-in-token-economy)
+- Scanners in the Rugcheck family combine mint and freeze authority, LP burn,
+  sniper and bundler detection, and top-holder concentration in one view.
+  Source: [Solana Tracker Rugcheck](https://www.solanatracker.io/rugcheck)
+
+### 3.2 The trap: counting CEX, LP and bundle wallets as holders `[verified, central]`
+
+- **Holder HHI that does not exclude protocol-controlled addresses (staking
+  contracts, treasuries, bridge custody, exchange wallets) overstates
+  concentration by a median factor of 2.3 and by up to 18 times.** Source:
+  [Frontiers in Blockchain, empirical study of 52 protocols](https://www.frontiersin.org/journals/blockchain/articles/10.3389/fbloc.2026.1853465/full)
+- Gini and Nakamoto calculations **cannot automatically separate smart contract
+  and exchange addresses from individuals**, so without filtering they overstate
+  centralisation. Source: [Bitquery](https://bitquery.io/blog/wealth-distribution-in-token-economy)
+- **Implication, applied directly in the specification**: `holder_dispersion` is
+  computed over an **effective float** that excludes (a) AMM pool vaults,
+  (b) known CEX wallets, (c) burn addresses, and (d) identified bundle or
+  insider clusters. Without those exclusions the LP vault, which holds a large
+  share of supply, ranks as the top holder and a perfectly ordinary token is
+  misread as extremely concentrated.
+- **`[unverified]`**: a free canonical source of CEX wallet labels. CEX labels
+  are therefore treated as an external or manually curated list, and the upward
+  bias that remains when the list is incomplete is stated in the specification.
+  In the segment BAZR covers, graduated meme tokens that have died, CEX listings
+  are effectively absent, so the practical impact of this gap is small
+  (`[estimate]`).
+
+### 3.3 Reading holders: Helius getTokenAccounts `[verified]`
+
+- `getTokenAccounts` (DAS) returns every token account for a mint. Response
+  fields: `{address, mint, owner, amount, delegated_amount, frozen, burnt}`.
+  **Maximum 1,000 per page**, paginated by `page` or `cursor`. Holders are
+  counted by de-duplicating `owner`, since one wallet can hold several accounts
+  for the same mint. Sources:
+  [Helius on token holders](https://www.helius.dev/blog/how-to-get-token-holders-on-solana),
+  [Helius getTokenAccounts reference](https://www.helius.dev/docs/api-reference/das/gettokenaccounts)
+- **Caveat** `[verified]`: the Helius documentation describes **no logic for
+  excluding LP, pool or program-owned accounts**. The exclusions in section 3.2
+  have to be implemented on our side.
+
+---
+
