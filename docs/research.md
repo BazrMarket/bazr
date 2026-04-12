@@ -223,3 +223,52 @@ Graduation is decided per token from the on-chain migration itself.
 
 ---
 
+## 4. LP burn and lock detection
+
+### 4.1 Burn verification, Raydium style `[verified]`
+
+- Formula: `Burn% = ((MaxLPSupply - ActualSupply) / MaxLPSupply) * 100`, where
+  `MaxLPSupply = max(ActualSupply, lpReserve - 1)`.
+- Three inputs: `lpMint` (the LP mint address), `lpReserve` (the LP amount held
+  by the pool account) and `supply` (the actual total supply of the LP mint).
+  Decimal normalisation is required. Source:
+  [Shyft, pool burn percentage](https://docs.shyft.to/solana-indexers/case-studies/raydium/get-pool-burn-percentage)
+- The principle: if `lpMint` has been burned, the liquidity is locked inside the
+  pool and cannot be withdrawn. Sources: Shyft above,
+  [TrustSwap](https://trustswap.com/solana/lock-raydium-lp)
+
+### 4.2 Burn verification, PumpSwap style `[verified]`
+
+- The PumpSwap pool account, under program
+  `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA`, tracks minted minus burned in
+  its `lp_supply` field. **The migration at graduation burns the pool LP**, which
+  locks the liquidity. The LP mint is derived deterministically from the PDA
+  seeds `["pool_lp_mint", pool]` under Token-2022. Sources:
+  [DeepWiki: PumpSwap AMM mechanism](https://deepwiki.com/pump-fun/pump-public-docs/4.1-pumpswap-amm-mechanism),
+  [DeepWiki: pump.fun liquidity docs](https://deepwiki.com/pump-fun/pump-public-docs/4.4-liquidity-management)
+- **Implication**: pump.fun tokens that graduated after 2025-03 are burned by
+  default, so the `lp-burned` label starts out true for them. Raydium pools and
+  manually created pools have to be checked individually.
+
+### 4.3 Lock verification: Streamflow and others `[verified]`
+
+- **Streamflow** is an audited on-chain contract that locks SPL and LP tokens by
+  time or by price. A mint address can be checked through its universal search.
+  Sources: [Streamflow on token locks](https://streamflow.finance/blog/token-locks-on-solana),
+  [Streamflow docs](https://docs.streamflow.finance/en/articles/9339705-token-lock)
+- Locks are independently verifiable on-chain through common explorers and
+  screeners. Sources:
+  [OpenLiquid](https://openliquid.io/blog/how-to-check-liquidity-locks/),
+  [StakePoint](https://stakepoint.app/blog/how-to-lock-raydium-lp-tokens)
+- **Burn and lock are different states** `[verified]`: a burn is permanent and
+  irreversible; a lock is temporary and expires, after which withdrawal becomes
+  possible again. The specification treats them as distinct states and reads the
+  expiry.
+- **`[unverified]`**: a complete list of program IDs for lockers other than
+  Streamflow. Known locker IDs are kept as a maintained set, and an unrecognised
+  locker produces a **false negative**, meaning a real lock that goes undetected,
+  rather than a false positive. Because of that, a token with no detected lock is
+  not asserted to be withdrawable; the label's confidence is lowered instead.
+
+---
+
