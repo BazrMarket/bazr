@@ -272,3 +272,50 @@ Graduation is decided per token from the on-chain migration itself.
 
 ---
 
+## 5. Rug and bundle detection practice
+
+### 5.1 Bundled buying `[verified]`
+
+- A Solana slot is about **400ms**. **When different wallets buy in the same
+  slot, it is almost always coordinated**, which makes same-slot buying the core
+  bundle indicator. Sources:
+  [DeFade on bundle sniping](https://defade.org/blog/what-is-bundle-sniping-solana),
+  [BingX bundle checker](https://bingx.com/en/learn/article/how-to-use-a-solana-bundle-checker-for-safe-token-buys)
+- Supporting signals: a **shared funding source**, for instance twenty or so
+  wallets funded with SOL from the same origin shortly before launch;
+  **freshly created wallets** with no prior history; and the **predictable
+  ordering of a Jito bundle**, where create, add liquidity, buy, buy, buy appear
+  in one transaction or bundle. Sources: DeFade and BingX above.
+- Tooling: **Trench Bot / TrenchScanner** style bundle scanners report how much
+  supply was bundled, across how many wallets, and how much of it is still held.
+  Sources: [Trench Bot](https://trench.bot/),
+  [Pine Analytics on exit liquidity](https://pineanalytics.substack.com/p/exit-liquidity-machines)
+
+### 5.2 Creator wallet tracing `[verified]`
+
+- Following on-chain funding relationships surfaces creator wallets, coordinated
+  clusters and wallet families. Sources: Trench and DeFade above.
+- **`[unverified]`**: any single standard method that identifies a creator wallet
+  with certainty. Practice combines heuristics: the signer of the creation
+  transaction, the first funding source, the launchpad's own creator record, and
+  the PumpSwap `coin_creator` field. Consequence: every creator-related label is
+  presented as an **observation**, with its false-positive exposure carried in
+  the confidence value rather than hidden.
+
+### 5.3 Surviving mint and freeze authority `[verified]`
+
+- An authority set to `null` has been permanently revoked. Sources:
+  [Solana set-authority docs](https://solana.com/docs/tokens/basics/set-authority),
+  [Helius explore-authorities](https://www.helius.dev/docs/orb/explore-authorities)
+- **pump.fun revokes mint authority by default** at creation, and update
+  authority as well. **Freeze authority is supposed to be revoked but sometimes
+  is not**, so it must never be assumed and must be checked on-chain per token.
+  A live freeze authority lets a creator block specific holders from selling,
+  which is a known rug technique. Sources:
+  [alphecca on revoking authority](https://alphecca.io/en/blog/revoke-authority-solana),
+  [DeFade safety checklist](https://defade.org/blog/pump-fun-token-safety-checklist)
+- How to check: read the `mintAuthority` and `freezeAuthority` fields of the mint
+  account, testing for null, through DAS `getAsset` or `getAccountInfo`.
+
+---
+
