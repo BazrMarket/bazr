@@ -77,3 +77,17 @@ flowchart LR
 
 ---
 
+## 1. `mint-authority-live`
+
+- **Observed fact:** the mint account has `mintAuthority != null`. Further issuance is
+  possible.
+- **Threshold:** true when the `mintAuthority` field is not null. Binary, nothing to compute.
+- **severity:** `alert` - **confidence:** `high` - **observed:** true when the authority exists
+- **False-positive risk:** effectively none; this is a confirmed on-chain field. There are
+  legitimate uses, however: some Token-2022, staking and rebasing designs keep the mint
+  authority intentionally. In this domain a live mint authority is a risk, but the label
+  describes a **capability** ("supply can still be inflated"), never a prediction that it
+  will be used.
+- **Display copy:** `Mint authority is live - supply can still be inflated.`
+- **evidence:** `{ mint_authority: "<pubkey>", checked_slot }`
+
