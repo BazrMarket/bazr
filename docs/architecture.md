@@ -32,3 +32,38 @@ this tree unless it is named as one.
 A build artifact is only as trustworthy as the source you can read. If a claim in
 this document and the code disagree, the code is right and the document is a defect.
 
+## System view
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#F2EFE3', 'primaryTextColor': '#3A3A38', 'primaryBorderColor': '#1F6FB2', 'lineColor': '#1F6FB2', 'secondaryColor': '#C8A87C', 'tertiaryColor': '#D9B85C', 'fontFamily': 'monospace'}}}%%
+flowchart LR
+    subgraph chain["Solana cluster"]
+        RPC["Solana JSON-RPC<br/>accounts, transactions, logs"]
+        PROG["bazr-market program<br/>stalls, listings, bonds, crates"]
+    end
+
+    PROV["Data providers<br/>Helius DAS, Jupiter, quote price feed"]
+
+    subgraph service["Service side, not in this repository"]
+        ENGINE["Scoring engine<br/>five axes, re-normalisation, verdict"]
+        API["Public HTTP API<br/>contract lives in this repository"]
+        WEB["Web front end<br/>wallet signing, evidence breakdown"]
+    end
+
+    subgraph clients["Clients"]
+        EXT["tag-extension<br/>price-tag overlay<br/>this repository"]
+        SDK["TypeScript SDK<br/>typed client, schema validation<br/>bazr-sdk repository"]
+        CLI["bazr CLI<br/>scripted lookups<br/>bazr-sdk repository"]
+    end
+
+    RPC --> ENGINE
+    PROV --> ENGINE
+    PROG -- "emitted events" --> ENGINE
+    ENGINE --> API
+    API --> SDK
+    API --> EXT
+    API --> WEB
+    SDK --> CLI
+    WEB -- "wallet-signed transactions" --> PROG
+```
+
