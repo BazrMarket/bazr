@@ -1,0 +1,25 @@
+[toolchain]
+anchor_version = "0.31.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+bazr_market = "FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb"
+
+[programs.devnet]
+bazr_market = "FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb"
+
+[registry]
+url = "https://api.apr.dev"
+
+# The deploy keypair is supplied from outside this repository and is never committed.
+# The path below is the Anchor default; point it at your own keypair locally, either by
+# editing this line or by passing --provider.wallet on the command line.
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
