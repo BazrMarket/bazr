@@ -102,3 +102,51 @@ EXCLUDE(mint) = AMM_POOL_VAULTS(mint)     # base/quote vault ATAs of every disco
 
 ---
 
+## 2. Axis 1 - `holder_dispersion`
+
+**Observation target:** how widely real holders are spread across the *effective float*,
+after pool, exchange, burn and insider wallets are removed.
+
+| Field | Value |
+| --- | --- |
+| `label` | `Holder spread` |
+| `blurb` | `How widely the real holders are spread, after removing pool, exchange, burn and insider wallets.` |
+
+### Inputs
+
+```text
+accounts = getTokenAccounts(mint), fully paginated (1000/page, burnt=false, amount>0)
+holders  = accounts aggregated by owner, minus EXCLUDE(mint)
+float    = sum(holders.amount)                       # effective circulating supply
+sort holders desc by amount
+top1     = holders[0].amount / float
+top10    = sum(holders[0..9].amount) / float
+n_eff    = count(holders where amount/float >= 1e-4) # ignore dust
+HHI      = 10000 * sum((amount_i/float)^2)           # reported for transparency, not scored
+```
+
+### Scoring
+
+```text
+base = lerp(top10, 0.20, 0.85, 100, 0)      # top10 at 20% -> 100, at 85% -> 0
+if top1 >= 0.35: base = min(base, 25)        # single wallet above 35%
+if top1 >= 0.50: base = min(base, 10)        # single wallet holds effective control
+if n_eff < 50:   base = min(base, lerp(n_eff, 10, 50, 20, 60))
+holder_dispersion = round(clamp(base, 0, 100))
+```
+
+The `n_eff` cap exists because a token can be perfectly "dispersed" across eight wallets.
+Dispersion of a tiny holder set is not the same signal as dispersion of a large one.
+
+**`unknown` when:** `getTokenAccounts` fails, `float <= 0`, or `n_eff == 0`.
+
+**`detail`:** `{ top1, top10, n_eff, hhi, float, excluded_counts: { pools, cex, burn, insider }, cex_list_missing }`
+
+**Notes and failure modes.** The 30% top-10 and 35% single-wallet lines follow common
+concentration-review practice. HHI is reported but not scored: it is largely redundant
+with `top10`, and scoring both would double-count the same structure. The largest
+practical error source is an incomplete `EXCLUDE` set, which biases this axis *downward*
+(more apparent concentration than really exists).
+
+---
+
