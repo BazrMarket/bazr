@@ -1,0 +1,27 @@
+{
+  "name": "@bazr/anchor-program",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BAZR on-chain market program (Anchor 0.31.1)",
+  "license": "MIT",
+  "scripts": {
+    "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
+    "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
+    "devnet-cycle": "ts-node scripts/devnet-cycle.ts"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@solana/spl-token": "^0.4.9"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.6",
+    "@types/chai": "^4.3.20",
+    "@types/mocha": "^10.0.9",
+    "chai": "^4.5.0",
+    "mocha": "^10.8.2",
+    "prettier": "^3.3.3",
+    "ts-mocha": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}
