@@ -67,3 +67,68 @@ flowchart LR
     WEB -- "wallet-signed transactions" --> PROG
 ```
 
+## What each layer owns, and what it refuses to own
+
+### On-chain program, `anchor-program/`
+
+Owns the ledger that has to survive the service: stall registration, the bond escrow,
+the append-only record of what each stall listed and how it turned out, and the crate
+weighting records.
+
+Does not own scoring. The program stores the relic score that a stall published at
+listing time so the call cannot be edited afterwards; it never computes one, and it
+cannot check one. It also holds no user trading funds: the only tokens it custodies
+are stall bonds, in a vault owned by the market program derived address.
+
+### Scoring engine
+
+Owns the five axes, the re-normalisation over observable axes, and the verdict gates
+described in [relic-spec.md](./relic-spec.md).
+
+Does not own opinion. Every axis is defined over an observable on-chain fact. Price
+direction and future return are not axes, and there is no field anywhere in the
+contract that carries a prediction.
+
+### Public HTTP API
+
+Owns the wire format in [api-contract.md](./api-contract.md): snake case JSON, a
+single error envelope, cursor pagination, rate limits that answer `429` with
+`Retry-After` rather than returning a quiet empty body.
+
+Does not own the formula. The contract carries `weight`, `contribution` and `status`
+per axis precisely so a caller can recompute the aggregate and check it against the
+spec instead of trusting the number.
+
+### TypeScript SDK, published separately
+
+Lives in [BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-sdk) as its own
+package. It is not in this tree.
+
+Owns transport and trust boundaries on the client: URL building, per-attempt timeout,
+retry with equal jitter, `Retry-After` handling on `429`, exponential backoff on `5xx`,
+no retry on other `4xx` responses because retrying a wrong request cannot fix it. Every
+response is validated against the contract schemas before it is returned, so a caller
+that receives a value can rely on its shape.
+
+Does not own chain access. The SDK opens no RPC connection, holds no key, and has one
+runtime dependency, `zod`. It also re-implements the missing-axis rule locally in
+`score.ts` so a rendering surface never has to fold an unobserved axis into a zero.
+
+### Command-line client, published separately
+
+Lives in the same [bazr-sdk](https://github.com/BazrMarket/bazr-sdk) repository as its
+own package, and provides the `bazr` command. It is a thin wrapper over the SDK for
+scripted lookups, so it opens no connection of its own and adds no scoring arithmetic:
+anything it prints arrived through the SDK from the HTTP API. Nothing in this
+repository provides a `bazr` command, so a reader who wants that source should go to
+the other repository.
+
+### Browser extension, `tag-extension/`
+
+Owns a read-only overlay: it recognises Solana mint addresses on pages a user already
+visits and hangs a price tag on them carrying the relic verdict and the axis breakdown.
+
+Does not own a wallet connection, transaction signing, or any provider credential. Its
+whole message surface is reads, settings and cache control, and the only network
+origins compiled into it are the BAZR API origins.
+
