@@ -32,3 +32,58 @@ front end are outside this repository.
 | Sites impersonating BAZR, browser malware, or a compromised user machine | Standard client-side risks. An overlay on a page you already trust does not make that page trustworthy. |
 | Execution risk on any swap you make | Slippage, sandwiching and failed transactions belong to the venue you trade on, not to a score. |
 
+## On-chain risk
+
+### The authority is the largest trust assumption
+
+`Market.authority` is a single key that can resolve a listing as `Survived` or `Faded`,
+slash a stall, and pause the market so that no new stall or listing is accepted. Those
+powers are enumerated and every use emits an event, so the authority's actions are
+publicly auditable after the fact. Auditable is not the same as prevented. A dishonest
+or compromised authority can mis-resolve listings and destroy bonds, and no on-chain
+rule in this program stops it.
+
+The honest description of a stall bond is therefore a deposit held under the authority's
+judgment, not a trustless escrow. Anyone weighing whether to open a stall should read it
+that way.
+
+### Bond and slash mechanics
+
+Opening a stall transfers `Market.stall_bond_amount` of the market's bond mint from the
+owner into the bond vault. Slashing burns `Market.slash_bps` basis points of that bond,
+returns the remainder, and sets `Stall.slashed` permanently: a slashed stall can never
+list again or reclaim a bond. `Stall.slashed_amount` and `Market.total_bond_burned`
+record the destruction and are never reset, so the punishment is as visible as the
+reputation it removed.
+
+`Market.fee_bps` exists in the account and is reserved for the routing layer. The market
+program itself does not charge it. Read that field as a reservation, not as a fee path
+hidden in these instructions.
+
+A `Crate` takes no custody at all. It is a weighting record whose `weights` must sum to
+exactly 10000 basis points on creation and on every rebalance, so a crate cannot quietly
+under-allocate, and no user funds sit behind it.
+
+### Upgrade authority
+
+Anchor programs deploy upgradeable by default. Until the upgrade authority is revoked or
+moved to a multi-signature or governance holder, whoever holds it can replace the
+deployed bytecode with something that shares none of the properties described here.
+
+Before trusting a deployment, check the on-chain state directly rather than the
+repository:
+
+```bash
+solana program show FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb
+```
+
+That prints the current upgrade authority and the deployed data hash. Compare the hash
+against a build you produced yourself, and treat a live upgrade authority as an open
+trust assumption for as long as it exists.
+
+### Audit status
+
+The program has not been through an external security audit. Nothing in this repository
+should be read as implying one. Account layouts, seeds and instruction surfaces are also
+still moving; see the status table in [architecture.md](./architecture.md).
+
