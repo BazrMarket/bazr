@@ -45,3 +45,14 @@ Values such as `revival`, or anything phrased as an outcome prediction, must
 never be added to the `Verdict` enum. The three verdicts below describe
 observed state, not expected state.
 
+## Base URL
+
+```
+dev   http://localhost:8030
+prod  https://<deployment-host>          (injected as NEXT_PUBLIC_API_BASE)
+```
+
+The SDK ships `http://localhost:8030` as `DEFAULT_BASE_URL` and trims trailing
+slashes from whatever it is given. A base URL must start with `http://` or
+`https://`.
+
