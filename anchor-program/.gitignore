@@ -1,0 +1,20 @@
+.anchor
+.DS_Store
+target
+**/*.rs.bk
+node_modules
+test-ledger
+.yarn
+
+# Packaging and interpreter leftovers
+*.tgz
+__pycache__/
+*.py[cod]
+
+# Deployer / signing material. Never commit any of these.
+.keys/
+.deploy/
+*-deploy.json
+*-deployer.json
+*-keypair.json
+id.json
