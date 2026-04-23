@@ -56,3 +56,17 @@ The SDK ships `http://localhost:8030` as `DEFAULT_BASE_URL` and trims trailing
 slashes from whatever it is given. A base URL must start with `http://` or
 `https://`.
 
+## Conventions
+
+- Every response is `application/json` with `snake_case` keys.
+- Integer amounts denominated in base units (lamports and token atoms) cross
+  the wire as **strings**. They exceed the safe integer range of a float64, so
+  a number would silently lose precision.
+- Timestamps are ISO 8601 strings in UTC, for example `2026-03-11T07:00:00Z`.
+- Errors use one envelope with an appropriate HTTP status:
+  ```jsonc
+  { "error": { "code": "...", "message": "...", "detail": { } } }
+  ```
+- CORS is a four-domain allowlist with `allow_credentials=True`. A wildcard
+  origin is not permitted.
+
