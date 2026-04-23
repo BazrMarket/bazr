@@ -132,3 +132,68 @@ Does not own a wallet connection, transaction signing, or any provider credentia
 whole message surface is reads, settings and cache control, and the only network
 origins compiled into it are the BAZR API origins.
 
+## On-chain accounts
+
+Four account types, all program derived addresses. The seed strings in
+`anchor-program/programs/bazr-market/src/constants.rs` are the single source of truth
+for derivation, and every client must derive from the same bytes.
+
+| Account | Seeds | Size, bytes | What it records |
+|---|---|---|---|
+| `Market` | `["market"]` | 224 plus discriminator | `authority`, `bazr_mint`, `bond_vault`, `stall_bond_amount`, `total_stalls`, `total_listings`, `total_crates`, `total_resolved_wins`, `total_resolved_losses`, `total_bond_burned`, `slash_bps`, `fee_bps`, `paused`, `bump`, `vault_bump`, `reserved` |
+| `Stall` | `["stall", owner]` | 216 plus discriminator | `owner`, `bond_amount`, `slashed_amount`, `opened_at`, `reputation`, `listings_count`, `active_listings`, `resolved_wins`, `resolved_losses`, `slashed`, `bump`, `uri`, `reserved` |
+| `Listing` | `["listing", stall, mint]` | 152 plus discriminator | `stall`, `mint`, `thesis_hash`, `listed_at`, `resolved_at`, `relic_score_at_listing`, `outcome`, `bump`, `reserved` |
+| `Crate` | `["crate", creator, crate_id_le]` | 680 plus discriminator | `creator`, `crate_id`, `created_at`, `last_rebalanced_at`, `rebalance_count`, `frozen`, `bump`, `name`, `mints`, `weights`, `reserved` |
+
+Four properties of that layout are deliberate and worth reading as design, not detail.
+
+- **Losses are stored at the same width as wins.** `Stall` carries `resolved_wins` and
+  `resolved_losses` as two `u32` fields, and `Market` carries `total_resolved_wins` and
+  `total_resolved_losses` as two `u64` fields. A schema that counted only wins could not
+  be repaired later by the interface, so the constraint lives in the account itself. The
+  same rule reaches the wire: the HTTP contract has no `win_rate` field, because a rate
+  alone lets a stall hide losses behind a denominator.
+- **Reputation is signed.** `Stall.reputation` is an `i64` moved by `REPUTATION_STEP`,
+  which is 100, up on a win and down by exactly the same step on a loss. A stall that is
+  wrong more often than right goes below zero.
+- **Records are never deleted.** Withdrawing a listing sets the `Withdrawn` outcome
+  rather than closing the account, so a stall cannot erase a call it no longer likes.
+- **Every account ends in a `reserved` tail.** New fields can be added there without
+  migrating existing accounts. A field added outside that tail would read zero on
+  pre-existing accounts, so only lifetime accumulators that legitimately start at zero
+  may ever be added that way.
+
+Bounds that clients must respect: `MAX_STALL_URI_LEN` 96 bytes, `MAX_CRATE_NAME_LEN`
+32 bytes, `MAX_CRATE_MINTS` 16, `MAX_BPS` 10000, `MAX_RELIC_SCORE` 1000.
+
+**Scale warning.** On chain, `Listing.relic_score_at_listing` is a `u16` bounded by
+`MAX_RELIC_SCORE`, which is 1000. The HTTP contract and the SDK report scores on a
+0 to 100 scale. A client that reads both surfaces must convert between them rather
+than assume one scale covers both.
+
+### Instructions and events
+
+`instructions/mod.rs` declares the program surface: `initialize_market`, `open_stall`,
+`list_relic`, `resolve_listing`, `withdraw_listing`, `close_stall`, `slash_stall`,
+`create_crate`, `rebalance_crate`, `freeze_crate`. Each of those ten has a handler file
+beside that module and an entry point in `lib.rs`, and the generated IDL in
+`idl/bazr_market.json` carries the same ten. That module is the authoritative list of
+what the program declares, and the files beside it are the authoritative list of what
+is written.
+
+Indexers consume the events in `events.rs`. `ListingResolved` deliberately carries
+`stall_resolved_wins`, `stall_resolved_losses` and `stall_reputation` together, so a
+leaderboard can be built from the event stream without a second fetch and there is no
+cheap path to a board that shows only the wins.
+
+Events have no `reserved` tail, unlike accounts. Adding a field to an existing event
+would break decoding of past logs, so a change of shape must be a new event type, with
+the discriminator acting as the version. An indexer that meets an unknown discriminator
+from this program should treat it as an error rather than skipping it quietly.
+
+`Anchor.toml` pins `bazr_market` to `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` for
+`localnet` and `devnet`. A declared program ID is not a deployment record: it is the
+address the program is built against. Verify any cluster deployment on an explorer
+before trusting it, and see [security.md](./security.md) for what an upgrade authority
+means for that trust.
+
