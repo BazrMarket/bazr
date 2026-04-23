@@ -1,0 +1,22 @@
+[package]
+name = "bazr-market"
+version = "0.1.0"
+description = "BAZR aftermarket: stall registry, listing ledger, bond escrow and crate vault"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "bazr_market"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"
+anchor-spl = { version = "0.31.1", features = ["token_2022"] }
