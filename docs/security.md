@@ -87,3 +87,59 @@ The program has not been through an external security audit. Nothing in this rep
 should be read as implying one. Account layouts, seeds and instruction surfaces are also
 still moving; see the status table in [architecture.md](./architecture.md).
 
+## The relic score can be wrong, and here is how
+
+A relic score is a summary of observations at a point in time. It is not a financial
+judgment, not a prediction, not a probability, and not a rating. It reports what could
+be seen about a token's survival signals when it was scored, and nothing beyond that.
+
+**Do not use a relic score as a reason to buy or sell anything.** A high score does not
+mean a token will recover, and a low score does not mean it cannot move. The score
+describes what is left of a token, not what will happen to it.
+
+### Per-axis failure paths
+
+| Axis | How it can be wrong | Direction of the error |
+|---|---|---|
+| `holder_dispersion` | Exchange wallets counted as ordinary holders. Removing them depends on a maintained label list, and there is no confirmed free canonical source for those labels; when the list is missing the response flags it. An unrecognised pool vault reads as one enormous holder. In the other direction, one actor splitting a position across many fresh wallets reads as genuine spread. | Both. A missing exclusion reads too concentrated; wallet splitting reads too dispersed. |
+| `lp_residual` | Liquidity held in a locker the classifier does not recognise reads as pullable. A pool that discovery misses is depth that is never counted. Only the actual quote-side vault balance is used, so advertised or virtual reserves cannot inflate it, but a stale balance read still can. | Mostly downward, except when a stale read overstates depth. |
+| `dev_wallet_state` | The creator is identified heuristically from the creation signature, the first funder and launchpad records. A creator who moved holdings to fresh wallets defeats that, and the axis then reads clean. Misattribution in the other direction penalises an unrelated wallet. | Both. Redistribution reads too clean; misattribution reads too harsh. |
+| `floor_shape` | Wash trading manufactures a trading floor. A day counts as active only when it carries both a minimum number of fills and at least three distinct signing wallets, which raises the cost of faking it. Three wallets are cheap on Solana, so this raises the price of the attack rather than closing it. | Upward when trading is simulated. |
+| `social_afterglow` | Attention is the easiest signal to buy. The axis is approximated from on-chain traces, new first-time holders, distinct active wallets and holder-count trend, so bot wallets inflate it directly. Any external social source is mixed in as a capped secondary input and named in the response. It carries the lowest weight, 0.10, for exactly this reason. | Upward under bot activity. |
+
+Two structural limits sit above that table. Every axis is a snapshot: the response
+carries `scored_at`, and a cached answer reports `cache.hit` with its `age_s`, because a
+score computed an hour ago describes an hour-old chain. And every axis measures the past.
+No arrangement of past observations tells you what a token does next.
+
+### Missing data is not bad data
+
+An axis that could not be observed is reported with `status: "unknown"` and a null
+score, and it is removed from the weighting so the remaining weights re-normalise over
+what was actually seen. It is never counted as a zero.
+
+This is not a stylistic choice. Folding an unobservable axis into a zero would render
+every token whose data lookup failed as dead, which is a claim about the token rather
+than about the lookup. Those two events must not collapse into the same number, because
+the second one is a failure of BAZR and the first would be presented as a fact about
+someone's holdings.
+
+The same rule governs the top-level field. When not a single axis could be observed, the
+score is `null`, not zero.
+
+### Low coverage produces no verdict
+
+Coverage is checked before any band is applied. If exit liquidity cannot be read at all,
+or if the axes that were observable carry less than half the total weight, the verdict is
+`unclear` with a stated reason, and no dead-or-dormant judgment is issued. The ambiguous
+middle of the score range is also `unclear`, because forcing a choice there would
+manufacture confidence that the observations do not support.
+
+An aggregate that looks healthy cannot override a decisive axis either. A token scoring
+well overall while its exit liquidity reads thin comes back `unclear` rather than
+`dormant`, because a token nobody can exit is not meaningfully asleep.
+
+The exact thresholds and formulas are in [relic-spec.md](./relic-spec.md), and every
+response carries a `disclaimer` field that rendering surfaces are expected to show as
+written.
+
