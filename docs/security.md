@@ -143,3 +143,22 @@ The exact thresholds and formulas are in [relic-spec.md](./relic-spec.md), and e
 response carries a `disclaimer` field that rendering surfaces are expected to show as
 written.
 
+## Credential handling
+
+- **Clients get public RPC only.** Paid provider endpoints and their keys stay on the
+  server, behind a proxy route that never forwards the key.
+- **No key is ever inlined into a client bundle.** Any build-time variable that a
+  framework exposes to the browser is written into the build output in plain text, so a
+  secret placed in one is public the moment it ships. Provider keys, RPC URLs carrying a
+  key, and bot tokens must never be set through such a variable. A build-output scan
+  before shipping is worth more than the intention not to do it.
+- **The SDK holds no credential at all.** `createBazrClient` takes a base URL, an
+  optional fetch implementation, timeout and retry settings, and headers. There is no key
+  parameter, because the public API needs none. A caller who adds an authorization header
+  through `headers` owns the job of keeping that bundle off a browser.
+- **Deploy keys live outside the tree.** The provider wallet in `Anchor.toml` points at a
+  path outside the repository, and build outputs are excluded by `.gitignore`. A keypair
+  file must never be committed, quoted in an issue, or pasted into a document.
+- **A leaked key is rotated, not deleted.** Removing a commit does not remove it from
+  clones or from anything that already fetched it. Rotate first, then clean up.
+
