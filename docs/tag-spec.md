@@ -91,3 +91,17 @@ flowchart LR
 - **Display copy:** `Mint authority is live - supply can still be inflated.`
 - **evidence:** `{ mint_authority: "<pubkey>", checked_slot }`
 
+## 2. `freeze-authority-live`
+
+- **Observed fact:** the mint account has `freezeAuthority != null`. Token accounts can be
+  frozen, which blocks their holders from selling.
+- **Threshold:** true when `freezeAuthority != null`.
+- **severity:** `alert` - **confidence:** `high` - **observed:** true when the authority exists
+- **False-positive risk:** effectively none. Important caveat: pump.fun revokes the mint
+  authority by default but **does not always revoke freeze**, so "it is a pump token,
+  therefore freeze is revoked" is an invalid assumption. Read the field per token. Some
+  regulated-asset designs use freeze legitimately; in a meme aftermarket it is a
+  sell-blocking vector.
+- **Display copy:** `Freeze authority is live - holders can be blocked from selling.`
+- **evidence:** `{ freeze_authority: "<pubkey>", checked_slot }`
+
