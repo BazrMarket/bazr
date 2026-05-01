@@ -197,3 +197,46 @@ address the program is built against. Verify any cluster deployment on an explor
 before trusting it, and see [security.md](./security.md) for what an upgrade authority
 means for that trust.
 
+## Relic score data flow
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#F2EFE3', 'primaryTextColor': '#3A3A38', 'primaryBorderColor': '#1F6FB2', 'lineColor': '#1F6FB2', 'secondaryColor': '#C8A87C', 'tertiaryColor': '#D9B85C', 'fontFamily': 'monospace'}}}%%
+flowchart TD
+    OBS["Observation pass for one mint<br/>holder accounts, pool vaults,<br/>mint and freeze authority, swap history"]
+    OBS --> AXES["Score five axes, 0 to 100 each<br/>lp_residual 0.30, floor_shape 0.25,<br/>holder_dispersion 0.20, dev_wallet_state 0.15,<br/>social_afterglow 0.10"]
+    AXES --> Q{"Was the axis<br/>actually observed?"}
+    Q -- "yes" --> OK["status ok<br/>score kept, weight kept"]
+    Q -- "no" --> UNK["status unknown, score null<br/>never folded into a zero"]
+    OK --> NORM["Re-normalise over observable axes only<br/>relic = sum of weight times score,<br/>divided by the observable weight"]
+    UNK --> NORM
+    NORM --> GATE{"lp_residual unknown,<br/>or observable weight<br/>below 0.50?"}
+    GATE -- "yes" --> UNCLEAR["verdict unclear<br/>coverage too thin to judge"]
+    GATE -- "no" --> BANDS["Apply thresholds<br/>hard override first, then bands"]
+    BANDS --> DEAD["verdict dead"]
+    BANDS --> DORMANT["verdict dormant"]
+    BANDS --> UNCLEAR
+    DEAD --> OUT["Response carries score, verdict,<br/>all five axes with per-axis contribution,<br/>sources, scored_at, disclaimer"]
+    DORMANT --> OUT
+    UNCLEAR --> OUT
+```
+
+The one rule that governs the whole path: **a missing observation is not a bad
+observation.** An axis that could not be read is marked `unknown` and removed from the
+weighting, and the remaining weights are re-normalised. Folding it in as a zero would
+render every token whose data lookup failed as dead, which is a different claim from
+"this could not be observed". The two events must never collapse into one number.
+
+The consequence is a third verdict. When liquidity cannot be read at all, or when the
+observable weight falls below half the total, the answer is `unclear` rather than a
+confident guess. `unclear` is also the answer for the ambiguous middle band, where the
+survival signals genuinely disagree. The exact thresholds, the per-axis formulas and a
+worked example are in [relic-spec.md](./relic-spec.md); the wire shape is in
+[api-contract.md](./api-contract.md).
+
+Two independent implementations of the aggregation exist on purpose. The service
+computes it, and the TypeScript SDK recomputes it from the axis array a caller already
+received, in its `src/score.ts` in the [bazr-sdk](https://github.com/BazrMarket/bazr-sdk)
+repository. A rendering surface can therefore show the contribution of each axis without
+trusting the service to have added them up correctly, and a mismatch between the two is
+visible rather than silent.
+
