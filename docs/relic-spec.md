@@ -150,3 +150,72 @@ practical error source is an incomplete `EXCLUDE` set, which biases this axis *d
 
 ---
 
+## 3. Axis 2 - `lp_residual`
+
+**Observation target:** how much real exit liquidity remains on the quote side, and
+whether that liquidity is burned, locked, or still pullable.
+
+| Field | Value |
+| --- | --- |
+| `label` | `Liquidity left` |
+| `blurb` | `Real quote-side liquidity still in the pool(s), and whether that liquidity is burned, locked, or still pullable.` |
+
+### Inputs
+
+```text
+pools = discover_pools(mint)                  # PumpSwap PDA, Raydium, and any other AMM found
+for p in pools:
+    p.quote_usd = balance(p.pool_quote_token_account) * quote_price_usd(p.quote_mint)
+    p.lp_state  = classify_lp(p)              # "burned" | "locked" | "unlocked"
+quote_usd = sum(p.quote_usd)                  # summed across all pools
+graduated = has_migration_record(mint)
+```
+
+```text
+classify_lp(p):
+    burn_pct = ((max(supply, lpReserve-1) - supply) / max(supply, lpReserve-1)) * 100
+    if burn_pct >= 99 or migrate_burn_confirmed(p): return "burned"
+    if lp_held_by_known_locker(p) and unlock_time > now: return "locked"
+    return "unlocked"
+```
+
+### Scoring
+
+```text
+depth = loglerp(quote_usd, 300, 30000, 0, 100)     # $300 -> 0 (no exit), $30k -> 100
+
+if all pools in {burned, locked}:
+    sec = 0                                        # already safe, no adjustment
+else:
+    pull_share = sum(quote_usd of unlocked pools) / max(quote_usd, 1)
+    sec = -lerp(pull_share, 0.20, 1.0, 0, 40)      # up to -40 as pullable share grows
+
+lp_residual = round(clamp(depth + sec, 0, 100))
+```
+
+### `unknown` versus a confirmed 0
+
+This distinction is the reason the axis exists in this form. Not finding a pool and
+confirming a pool is empty are different observations.
+
+```text
+if pools is empty and graduated == true:   lp_residual = 0        # migrated, yet no pool -> confirmed thin/dead
+if pools is empty and graduated != true:   lp_residual = unknown  # not found or not indexed -> undecidable
+if quote_price_usd cannot be observed:     lp_residual = unknown
+```
+
+**`detail`:** `{ quote_usd, pools: [{ amm, quote_usd, lp_state, burn_pct, unlock_time }], graduated }`
+
+**Notes and failure modes.** Post-graduation death shows up as depth collapse rather than
+as a price move, which is why depth is measured directly. Only the **quote side** counts:
+token-side balance is not exit liquidity, since selling into it is exactly what fails.
+The `$300` floor encodes the practical point at which exiting a position is no longer
+possible. The three LP states are ordered by strength: burned is permanent, locked is
+temporary and expires, unlocked is a live withdrawal vector. Known error sources are
+undiscovered pools (biases the axis down, reads as thinner than reality), unknown locker
+programs (a locked LP read as `unlocked`, also biasing down), and stale reserve reads.
+The bias direction is deliberate: this axis prefers to understate liquidity rather than
+overstate it.
+
+---
+
