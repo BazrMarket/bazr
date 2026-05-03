@@ -70,3 +70,31 @@ slashes from whatever it is given. A base URL must start with `http://` or
 - CORS is a four-domain allowlist with `allow_credentials=True`. A wildcard
   origin is not permitted.
 
+## Request path
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#F2EFE3', 'primaryTextColor': '#3A3A38', 'primaryBorderColor': '#1F6FB2', 'lineColor': '#1F6FB2', 'secondaryColor': '#C8A87C', 'tertiaryColor': '#D9B85C', 'fontFamily': 'monospace'}}}%%
+flowchart LR
+  CLIENT["client<br/>SDK / CLI / extension / web"]
+  API["BAZR API<br/>JSON, snake_case"]
+  CACHE["response cache<br/>reported as cache.hit and cache.age_s"]
+  ENGINE["scoring engine<br/>five axes, re-normalised"]
+  CHAIN["Solana RPC"]
+  DAS["Helius DAS"]
+  JUP["Jupiter quote API"]
+
+  CLIENT -->|"GET /relic/{mint}"| API
+  API --> CACHE
+  CACHE -->|"hit"| API
+  CACHE -->|"miss, or ?refresh=true"| ENGINE
+  ENGINE --> CHAIN
+  ENGINE --> DAS
+  ENGINE --> JUP
+  ENGINE -->|"axes, tags, sources[]"| API
+  API -->|"validated against the schemas"| CLIENT
+```
+
+External data providers are named in the response rather than hidden. Every
+relic response carries a `sources[]` array, and every haggle quote carries a
+`source` string naming what produced the route.
+
