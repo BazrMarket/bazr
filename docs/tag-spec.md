@@ -105,3 +105,25 @@ flowchart LR
 - **Display copy:** `Freeze authority is live - holders can be blocked from selling.`
 - **evidence:** `{ freeze_authority: "<pubkey>", checked_slot }`
 
+## 3. `lp-burned`
+
+- **Observed fact:** the pool's LP tokens have been burned, so the migrated liquidity
+  cannot be pulled back out.
+- **Threshold:** `burn_pct >= 99`, where
+  `burn_pct = ((max(supply, lpReserve-1) - supply) / max(supply, lpReserve-1)) * 100`,
+  **or** a confirmed PumpSwap migration burn (`lp_supply` plus the migration record).
+- **severity:** `info` - **confidence:** `high` when confirmed via the migration record,
+  `medium` when derived only from the Raydium-style burn computation
+- **False-positive risk:**
+  - Token-2022 LP (PumpSwap) has different burn semantics from classic SPL. **Not
+    branching by path produces wrong determinations.** PumpSwap uses `lp_mint` circulation
+    and `lp_supply`; Raydium uses the supply/reserve formula above.
+  - When liquidity sits in **several pools**, labelling the token "burned" from one pool
+    misses pullable LP in another. The label is therefore attached **per pool**, and a
+    token-level summary distinguishes "some pools burned".
+  - Partial burns must not be rounded up to complete ones. `burn_pct` is exposed verbatim
+    in the evidence.
+- **Display copy:** `LP burned (pool liquidity locked permanently).` For a partial burn:
+  `LP mostly burned (NN%).`
+- **evidence:** `{ per_pool: [{ amm, lp_mint, burn_pct, method: "migrate" | "supply-calc" }] }`
+
