@@ -240,3 +240,25 @@ repository. A rendering surface can therefore show the contribution of each axis
 trusting the service to have added them up correctly, and a mismatch between the two is
 visible rather than silent.
 
+## Scope boundary
+
+BAZR does not build a new-token feed, live trending or hot-ranking boards, sniping or
+automated buying of any kind, or its own automated market maker, order book or
+perpetuals. The API contract names these as endpoints that are never created, and that
+list is a design constraint, not a backlog.
+
+The reason is that those products belong to the launch moment, and the launch moment is
+a latency race: the winner is whoever surfaces the newest thing fastest. That race is
+exactly the pressure that produces the abandoned tokens BAZR looks at, and it is
+already served well by established tools. BAZR's question arrives after the race is
+decided, when the useful information is no longer what is moving but what is left
+behind: whether there is exit liquidity, whether anyone still trades it, whether the
+holders are real, whether the creator still holds control. The only time axis this
+project works on is post-graduation. Adding a live feed would put the tool back inside
+the race it was built to examine afterwards, and would make it a worse copy of products
+that already exist.
+
+The routing layer follows the same rule. Quotes are computed over existing liquidity
+and every quote response names its `source` plainly, so a reader always knows whether
+they are looking at BAZR arithmetic or a third-party route.
+
