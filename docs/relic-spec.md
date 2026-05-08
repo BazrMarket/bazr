@@ -219,3 +219,57 @@ overstate it.
 
 ---
 
+## 4. Axis 3 - `dev_wallet_state`
+
+**Observation target:** the residual control and supply overhang the creator still holds,
+including whether mint or freeze authority is still live.
+
+| Field | Value |
+| --- | --- |
+| `label` | `Creator overhang` |
+| `blurb` | `Residual control the creator still holds: remaining supply, recent large moves, and whether mint or freeze authority is still live.` |
+
+### Inputs
+
+```text
+mint_live   = (mintAuthority   != null)
+freeze_live = (freezeAuthority != null)
+creator     = identify_creator(mint)   # heuristic: creation-tx signer / first funder /
+                                       #   pump.fun creator record / PumpSwap coin_creator
+dev_pct        = creator ? sum(creator balances) / total_supply : unknown
+dev_recent_out = creator ? creator outflow over the last 7 days / total_supply : unknown
+```
+
+### Scoring
+
+```text
+score = 100
+if mint_live:   score -= 50                          # further issuance possible
+if freeze_live: score -= 45                          # transfers can be blocked
+if dev_pct != unknown:
+    score -= lerp(dev_pct, 0.03, 0.30, 0, 30)        # 3% -> 0, 30%+ -> -30 supply overhang
+    score -= lerp(dev_recent_out, 0.05, 0.40, 0, 15) # recent large outflow
+dev_wallet_state = round(clamp(score, 0, 100))
+```
+
+### Partial-observation rule
+
+Authority fields are almost always readable. If only the creator cannot be identified,
+the axis is still scored from the authority fields alone, the `dev_pct` and
+`dev_recent_out` terms are dropped, and `detail.creator_resolved` is set to `false`. If
+the authority fields themselves cannot be read, the axis is `unknown`.
+
+**`detail`:** `{ mint_live, freeze_live, creator, creator_resolved, dev_pct, dev_recent_out }`
+
+**Notes and failure modes.** A null authority is a confirmed on-chain fact, so that half
+of the axis is high confidence. Mint authority is weighted more heavily than freeze
+authority because unlimited issuance is more destructive than blocked transfers. Note
+that pump.fun revokes mint authority by default but **does not always revoke freeze**, so
+the state must be read per token rather than assumed. Creator identification is the weak
+half: proxy funding, paid-for deployments and reused wallets all produce misattribution.
+A creator who has fully exited scores 100 here by design, because this axis measures
+residual *control*, not abandonment. Abandonment is picked up by `floor_shape` and
+`social_afterglow`, and double-counting it here would punish the same fact twice.
+
+---
+
