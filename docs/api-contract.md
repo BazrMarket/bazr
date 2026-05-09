@@ -98,3 +98,80 @@ External data providers are named in the response rather than hidden. Every
 relic response carries a `sources[]` array, and every haggle quote carries a
 `source` string naming what produced the route.
 
+## Common types
+
+### `Verdict`
+
+```
+"dormant" | "dead" | "unclear"
+```
+
+Exactly three values. `unclear` is a real answer, used when the observable
+axes disagree or too few of them could be read.
+
+### `AxisKey`
+
+```
+"holder_dispersion" | "lp_residual" | "dev_wallet_state" | "floor_shape" | "social_afterglow"
+```
+
+Five keys, always. A relic response includes all five, including the ones that
+could not be observed.
+
+### `Axis`
+
+```jsonc
+{
+  "key": "holder_dispersion",
+  "label": "Holder dispersion",
+  "blurb": "How spread out the remaining holders are, excluding CEX and LP wallets.",
+  "score": 62,                          // 0-100. null when status is "unknown"
+  "weight": 0.20,                       // pre-normalisation weight
+  "contribution": 15.5,                 // what this axis actually added to the score
+  "status": "ok",                       // "ok" | "unknown"
+  "detail": { }                         // per-axis raw observations, rendered as evidence
+}
+```
+
+`weight` is the pre-normalisation weight defined in
+[`./relic-spec.md`](./relic-spec.md), which is the source of truth for these
+numbers:
+
+| Axis | Weight |
+|---|---|
+| `lp_residual` | 0.30 |
+| `floor_shape` | 0.25 |
+| `holder_dispersion` | 0.20 |
+| `dev_wallet_state` | 0.15 |
+| `social_afterglow` | 0.10 |
+| total | 1.00 |
+
+**An axis with `status: "unknown"` is dropped from the weighting and the
+remaining weights are re-normalised. It is never folded in as a zero.** Missing
+data and bad data are different events. Collapsing them would render every
+token whose lookup failed as if it were dead. The SDK implements this in its
+`src/score.ts`, in the [bazr-sdk](https://github.com/BazrMarket/bazr-sdk)
+repository, and reports which axes were observed, which came back unknown, and
+which were absent from the payload entirely.
+
+### `Tag`
+
+```jsonc
+{
+  "key": "lp-burned",
+  "label": "LP burned",
+  "severity": "info",        // "info" | "caution" | "alert"
+  "observed": true,          // whether this is an observation rather than an inference
+  "confidence": "high",      // "high" | "medium" | "low"
+  "evidence": { }            // signatures, account addresses, measured values
+}
+```
+
+`severity` is the size of the risk; `confidence` is how certain the call is.
+They are independent, and clients render them separately so that a low-confidence
+finding reads as an observation rather than a verdict. `key` is a free-form
+string on the wire: clients must handle keys they do not recognise instead of
+rejecting the response.
+
+Rug and bundle findings are surfaced, not suppressed.
+
