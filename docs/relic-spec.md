@@ -273,3 +273,53 @@ residual *control*, not abandonment. Abandonment is picked up by `floor_shape` a
 
 ---
 
+## 5. Axis 4 - `floor_shape`
+
+**Observation target:** persistence of trading, not price. Does a minimal level of
+execution keep happening day after day, and does it involve more than a couple of wallets.
+
+| Field | Value |
+| --- | --- |
+| `label` | `Trading floor` |
+| `blurb` | `How consistently the token still trades day over day. This measures persistence of fills, not price.` |
+
+### Inputs
+
+```text
+swaps = all swaps across all pools over the last W = 30 days
+for each day d in [0..W):
+    fills_d   = number of swaps on day d
+    traders_d = number of distinct signing wallets on day d
+    active(d) = (fills_d >= 5) and (traders_d >= 3)
+active_days = count of active days
+since_last  = days elapsed since the most recent active day (W if there is none)
+gap_max     = longest run of consecutive inactive days
+```
+
+### Scoring
+
+```text
+ratio = active_days / W
+base  = lerp(ratio, 0.05, 0.80, 0, 100)     # 5% of days active -> 0, 80% -> 100
+base -= lerp(since_last, 2, 14, 0, 45)      # active within 2 days -> 0, 14+ days -> -45
+floor_shape = round(clamp(base, 0, 100))
+```
+
+**`unknown` when:** swap history cannot be retrieved. If only part of the window is
+retrievable, score over the retrieved span and narrow `detail.window_days` accordingly;
+if that span is shorter than 7 days, the axis is `unknown`.
+
+**`detail`:** `{ active_days, window_days, since_last, gap_max, fills_total, distinct_traders_total, fill_threshold: 5, trader_threshold: 3 }`
+
+**Notes and failure modes.** Most graduated tokens stop trading within 24 to 48 hours, so
+continued execution is the most direct evidence of survival available on-chain. Price is
+excluded on purpose. The `traders_d >= 3` gate is a wash-trading defence: two wallets
+passing a position back and forth can manufacture a convincing fill cadence, and the
+distinct-wallet requirement raises the cost of that. It does not eliminate it - a
+determined actor with several funded wallets still clears this gate. The thresholds of
+`fills >= 5` and `>= 3 traders` are deliberately low, because this specification targets
+faint-but-real floors in dead meme tokens, not active new launches. Applying these
+thresholds to a live launch would produce meaningless full marks.
+
+---
+
