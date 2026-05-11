@@ -323,3 +323,64 @@ thresholds to a live launch would produce meaningless full marks.
 
 ---
 
+## 6. Axis 5 - `social_afterglow`
+
+**Observation target:** the on-chain trace of lingering attention - first-time holders,
+breadth of distinct active wallets, and holder-count trend. The primary definition uses
+on-chain data only, so the axis works without any external social API.
+
+| Field | Value |
+| --- | --- |
+| `label` | `Afterglow` |
+| `blurb` | `On-chain traces of lingering attention: new first-time holders, breadth of distinct active wallets, and holder-count trend.` |
+
+### Inputs, on-chain approximation over `W = 30 days`
+
+```text
+new_holders    = wallets that acquired this mint for the first time ever within W
+unique_traders = distinct wallets that traded within W
+holder_now     = current effective holder count (reuses n_eff from axis 1)
+holder_prev    = holder count W days ago (snapshot/history)
+trend          = (holder_now - holder_prev) / max(holder_prev, 1)
+```
+
+### Scoring
+
+```text
+breadth = lerp(unique_traders, 3, 150, 0, 60)     # breadth caps at 60
+inflow  = lerp(new_holders,    1, 80,  0, 25)     # new entrants cap at 25
+trendc  = lerp(trend, -0.30, 0.20, -15, 15)       # shrinking negative, growing positive
+social_afterglow = round(clamp(breadth + inflow + trendc, 0, 100))
+```
+
+### Optional external social input
+
+The axis is complete without it. When an external social source is used:
+
+- `detail.social_source` must name the source.
+- The final axis value is a weighted mean of `on-chain 0.7 / social 0.3`.
+- The limitations must be recorded in `detail`: social data is (a) manipulable by bots and
+  coordinated posting, (b) rate limited, and (c) usually absent entirely for dead tokens.
+  Social input is therefore a capped auxiliary term, never the primary value.
+
+**`unknown` when:** trade history and holder snapshots (current and historical) are *both*
+unavailable. If any component is available, score from the available components, treat the
+missing components as contributing 0, and record which ones were missing in `detail`.
+
+**`detail`:** `{ new_holders, unique_traders, holder_now, holder_prev, trend, social_source, on_chain_only }`
+
+**Separation from `floor_shape` (no double counting).** `floor_shape` measures the
+*cadence* of execution: is trading happening at all. `social_afterglow` measures the
+*breadth* of participants, new entry and holder trend: is new attention arriving. The two
+can and do diverge. Two wallets wash trading produce a floor cadence with near-zero
+breadth and inflow; a burst of new holders can appear while the fill cadence stays
+sporadic. Implementations must not fold these two axes into a shared computation.
+
+**This is the weakest and most manipulable axis in the specification.** Wallet creation is
+cheap, so `new_holders` and `unique_traders` can both be inflated by an actor willing to
+spend a small amount on transaction fees. That is the reason it carries the lowest weight
+in section 7, and the reason external social data is capped at 0.3 of the axis rather than
+being allowed to drive it.
+
+---
+
