@@ -384,3 +384,28 @@ being allowed to drive it.
 
 ---
 
+## 7. Weights
+
+```text
+W_lp_residual       = 0.30
+W_floor_shape       = 0.25
+W_holder_dispersion = 0.20
+W_dev_wallet_state  = 0.15
+W_social_afterglow  = 0.10
+                      ----
+total                 1.00
+```
+
+| Axis | Weight | Reasoning |
+| --- | --- | --- |
+| `lp_residual` | 0.30 | Primary determinant of the question this score answers. With no exit liquidity, every other axis is academic. |
+| `floor_shape` | 0.25 | The most direct evidence of continued activity. Most graduated tokens stop trading entirely. |
+| `holder_dispersion` | 0.20 | Structural risk. Good dispersion does not save a token with no liquidity, but extreme concentration degrades the quality of what remains. |
+| `dev_wallet_state` | 0.15 | Residual control risk. Graduated tokens frequently have both authorities already revoked, which lowers this axis's discriminating power. |
+| `social_afterglow` | 0.10 | On-chain approximation of attention and the most manipulable input. Lowest weight by construction. |
+
+These raw weights are transported in `Axis.weight` (pre-normalisation) as defined in
+[`./api-contract.md`](./api-contract.md).
+
+---
+
