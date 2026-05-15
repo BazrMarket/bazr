@@ -409,3 +409,64 @@ These raw weights are transported in `Axis.weight` (pre-normalisation) as define
 
 ---
 
+## 8. Aggregation and missing-axis re-normalisation
+
+```text
+axes      = { lp_residual, floor_shape, holder_dispersion, dev_wallet_state, social_afterglow }
+available = { a in axes : a.score != unknown }
+W_avail   = sum(W_a for a in available)
+
+if W_avail == 0:
+    return { score: null, verdict: "unclear", reason: "no observable axis" }
+
+relic = sum(W_a * a.score for a in available) / W_avail        # 0..100
+
+for a in axes:
+    a.status       = (a in available) ? "ok" : "unknown"
+    a.contribution = (a in available) ? (W_a / W_avail) * a.score : 0
+    # invariant: sum(a.contribution) == relic
+
+relic = round(relic)
+```
+
+### Why missing axes leave the denominator instead of scoring 0
+
+This is the central honesty mechanism of the specification, so it is worth stating
+plainly. Suppose four axes are observable and score well, and the fifth cannot be read
+because an indexer is behind.
+
+- Folding the missing axis in as 0 would drop the aggregate by up to 30 points and could
+  flip the verdict to `dead`. The token did not change. Our visibility did.
+- Under that rule, every degradation of our own data pipeline would be published as
+  evidence that tokens are dying. The score would silently measure our uptime.
+- Re-normalising instead means the reported score is the honest weighted mean of *what was
+  actually observed*, and the fact that something was not observed is reported separately
+  through `status: "unknown"` and the coverage gate in section 9.
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#F2EFE3', 'primaryTextColor': '#3A3A38', 'primaryBorderColor': '#1F6FB2', 'lineColor': '#1F6FB2', 'secondaryColor': '#C8A87C', 'tertiaryColor': '#D9B85C', 'fontFamily': 'monospace'}}}%%
+flowchart TD
+  A["5 axes, raw weights sum to 1.00"] --> B{"axis status"}
+  B -->|"ok"| C["counts toward W_avail"]
+  B -->|"unknown"| D["dropped from the denominator<br/>NOT scored as 0"]
+  C --> E["relic = sum of W_a * score over available / W_avail"]
+  D --> F["status unknown is reported<br/>contribution 0, score null"]
+  E --> G["W_avail is also the coverage gate input"]
+  F --> G
+```
+
+`contribution` is the amount an axis actually added to the final score. A rendering
+surface can lay the five contributions side by side and they will sum to the score.
+
+**Reconciliation with the SDK.** The TypeScript SDK's `src/score.ts`, in the
+[bazr-sdk](https://github.com/BazrMarket/bazr-sdk) repository, implements this as
+`normalizedScore()`. Because the contract requires every response to
+carry all five axes, the SDK's `weightCoverage` (observable weight divided by weight
+present in the payload) equals `W_avail` here. The SDK also exposes two things this
+document does not compute: `equalWeightFallback`, set when every observable axis arrived
+with weight 0 and an equal-weight mean had to be used instead - surfaced rather than
+hidden, because it means the API sent unusable weights - and `missing`, listing canonical
+axes absent from the payload entirely, which is a contract violation on the server side.
+
+---
+
