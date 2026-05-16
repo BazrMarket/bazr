@@ -127,3 +127,23 @@ flowchart LR
   `LP mostly burned (NN%).`
 - **evidence:** `{ per_pool: [{ amm, lp_mint, burn_pct, method: "migrate" | "supply-calc" }] }`
 
+## 4. `lp-locked`
+
+- **Observed fact:** LP tokens are held by a known locker contract and the unlock time is
+  in the future.
+- **Threshold:** the LP holder is an account owned by a **known locker program** **and**
+  `unlock_time > now`.
+- **severity:** `info` - **confidence:** `high` when the contract and expiry are both
+  confirmed, `medium` when the locker is identified but the expiry cannot be parsed
+- **False-positive risk:**
+  - **An unknown locker program yields a false negative** - the LP is locked but not
+    detected. Therefore the absence of `lp-locked` must never be presented as "pullable".
+    When no locker is identified, `lp_residual` conservatively treats that LP as
+    `unlocked`, which biases the score down rather than overstating safety.
+  - **An expired lock is not a lock.** Once `unlock_time <= now` the label is removed and
+    the pullable-liquidity assessment is recomputed.
+  - Locking is weaker than burning: the liquidity becomes withdrawable again at expiry.
+    The interface must always show the unlock date alongside the label.
+- **Display copy:** `LP locked until <date> via <locker>.`
+- **evidence:** `{ locker, lock_account, unlock_time, amount, share_of_lp }`
+
