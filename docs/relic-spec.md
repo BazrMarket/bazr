@@ -470,3 +470,63 @@ axes absent from the payload entirely, which is a contract violation on the serv
 
 ---
 
+## 9. Verdict thresholds
+
+Rules are evaluated in order. The first rule that matches decides the verdict.
+
+```text
+  # (1) coverage gate - an honest "unclear"
+  if lp_residual.status == "unknown":            verdict = "unclear"; reason = "no liquidity read"
+  elif W_avail < 0.50:                           verdict = "unclear"; reason = "insufficient coverage"
+
+  # (2) hard dead override - both deciding axes are at the floor
+  elif lp_residual.score <= 10
+       and (floor_shape.status == "unknown" or floor_shape.score <= 10):
+                                                 verdict = "dead";    reason = "no exit liquidity, no trading floor"
+
+  # (3) band verdict
+  elif relic <= 33:                              verdict = "dead"
+  elif relic >= 60:
+       if lp_residual.score >= 40:               verdict = "dormant"
+       else:                                     verdict = "unclear"; reason = "high aggregate but cannot exit"
+  else:  # 34..59
+                                                 verdict = "unclear"
+```
+
+| Condition | Verdict |
+| --- | --- |
+| `lp_residual` is `unknown`, or `W_avail < 0.50` | `unclear` (coverage) |
+| `lp_residual <= 10` and (`floor_shape` is `unknown` or `<= 10`) | `dead` (hard override) |
+| `relic <= 33` | `dead` |
+| `relic >= 60` and `lp_residual >= 40` | `dormant` |
+| `relic >= 60` but `lp_residual < 40` | `unclear` (aggregate is high but exit is not possible) |
+| `34 <= relic <= 59` | `unclear` (genuinely mixed) |
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#F2EFE3', 'primaryTextColor': '#3A3A38', 'primaryBorderColor': '#1F6FB2', 'lineColor': '#1F6FB2', 'secondaryColor': '#C8A87C', 'tertiaryColor': '#D9B85C', 'fontFamily': 'monospace'}}}%%
+flowchart TD
+  START["scored axes"] --> C1{"lp_residual unknown<br/>or W_avail below 0.50"}
+  C1 -->|"yes"| U1["unclear<br/>coverage"]
+  C1 -->|"no"| C2{"lp_residual at most 10<br/>and floor_shape unknown or at most 10"}
+  C2 -->|"yes"| D1["dead<br/>hard override"]
+  C2 -->|"no"| C3{"relic at most 33"}
+  C3 -->|"yes"| D2["dead"]
+  C3 -->|"no"| C4{"relic at least 60"}
+  C4 -->|"no"| U2["unclear<br/>mixed band 34-59"]
+  C4 -->|"yes"| C5{"lp_residual at least 40"}
+  C5 -->|"yes"| DR["dormant"]
+  C5 -->|"no"| U3["unclear<br/>cannot exit"]
+```
+
+**Why three verdicts instead of two.** The 34 to 59 band is where survival signals
+genuinely conflict: liquidity says one thing, trading says another. Forcing a binary
+choice there would manufacture confidence that the observations do not support. Reporting
+`unclear` is the accurate answer, and it is the answer this tool is willing to give often.
+
+**Why a high aggregate can still be `unclear`.** If `relic >= 60` but `lp_residual < 40`,
+the token cannot be called dormant, because "dormant" implies it can trade again. A
+position that cannot be exited is not a sleeping position. When the aggregate and a
+deciding axis disagree, the deciding axis wins.
+
+---
+
