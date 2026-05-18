@@ -147,3 +147,22 @@ flowchart LR
 - **Display copy:** `LP locked until <date> via <locker>.`
 - **evidence:** `{ locker, lock_account, unlock_time, amount, share_of_lp }`
 
+## 5. `lp-thin`
+
+- **Observed fact:** summed quote-side liquidity across all discovered pools is small, so
+  exiting a position is constrained.
+- **Threshold:** `quote_usd` (summed over all pools) `< $1,000`. Note the deliberate offset
+  from the score: [`./relic-spec.md`](./relic-spec.md) section 3 puts the depth-score floor
+  at `$300`, while this label warns at the more generous `$1,000` so a user sees thinness
+  before it becomes total.
+- **severity:** `caution` - **confidence:** `high` given a fresh multi-pool read
+- **False-positive risk:**
+  - **Not summing across pools produces a false "thin"** when liquidity simply sits in
+    another pool. Every discovered pool must be included.
+  - **Stale reserve reads** misjudge a moment. Read at one slot and record
+    `last_indexed_slot`.
+  - If the SOL price needed for USD conversion cannot be observed, the label is withheld as
+    unknown. It is never computed as `$0`.
+- **Display copy:** `Thin liquidity - about $<amount> of exit depth across <k> pool(s).`
+- **evidence:** `{ quote_usd, pools: [{ amm, quote_usd }], sol_price_used, checked_slot }`
+
