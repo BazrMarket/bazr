@@ -166,3 +166,22 @@ flowchart LR
 - **Display copy:** `Thin liquidity - about $<amount> of exit depth across <k> pool(s).`
 - **evidence:** `{ quote_usd, pools: [{ amm, quote_usd }], sol_price_used, checked_slot }`
 
+## 6. `dev-holds-N%`
+
+- **Observed fact:** the identified creator wallet or wallets currently hold N% of supply.
+- **Threshold:** shown from `dev_pct >= 5%`. N is exposed as the observed value, rounded to
+  1%. At `>= 20%` the severity is raised.
+- **severity:** `caution` for 5-20%, `alert` for `>= 20%` - **confidence:** `medium`,
+  because creator attribution is heuristic
+- **False-positive risk:**
+  - **Creator misattribution.** The creation-tx signer, the first funder and the
+    `coin_creator` field can all point at someone other than the actual developer, through
+    proxy deployment or paid-for creation. The label therefore uses observational phrasing
+    and records the attribution basis in the evidence.
+  - If the wallet is in fact an LP or staking contract, the holding is overstated. Cross
+    check against the `EXCLUDE` set from the score specification.
+  - N% is a **fact, not an intent**. The copy states the holding and nothing about what the
+    holder will do with it.
+- **Display copy:** `Creator wallet holds ~N% of supply.`
+- **evidence:** `{ creator, attribution: "signer" | "first-funder" | "coin_creator", dev_pct, wallets: [...] }`
+
