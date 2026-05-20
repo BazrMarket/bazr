@@ -175,3 +175,176 @@ rejecting the response.
 
 Rug and bundle findings are surfaced, not suppressed.
 
+## Endpoints
+
+### `GET /health`
+
+```jsonc
+{ "status": "ok", "version": "0.1.0", "uptime_s": 1234 }
+```
+
+### `GET /health/detailed`
+
+Connection state and last success time for the database, cache and RPC
+dependencies. Failures are reported as failures rather than smoothed over.
+
+The top level names the chain twice, never once. `data_cluster` and
+`program_cluster` are separate fields carrying the same meaning and the same
+omission rule as in `GET /market/stats` below.
+
+```jsonc
+{
+  "status": "ok",
+  "version": "0.1.0",
+  "uptime_s": 1234,
+  "data_cluster": "mainnet",       // chain the scored tokens are read from
+  "program_cluster": "devnet",     // chain the program is deployed on; key absent when nothing is
+  "checks": { }                    // per-dependency state and last success time
+}
+```
+
+### `GET /relic/{mint}`
+
+Query: `?refresh=true` bypasses the cache and is rate limited far more tightly
+than a plain read.
+
+```jsonc
+{
+  "mint": "So1111...",
+  "symbol": "EXAMPLE",
+  "name": "Example",
+  "score": 47,                        // 0-100. null when not one axis could be observed
+  "verdict": "unclear",
+  "axes": [ /* Axis[] -- all five, unobservable ones included as status "unknown" */ ],
+  "tags": [ /* Tag[] */ ],
+  "graduated_at": "2025-11-02T10:11:12Z",   // null when it cannot be established
+  "scored_at": "2026-03-11T07:00:00Z",
+  "cache": { "hit": true, "age_s": 120 },
+  "sources": [ { "name": "helius", "endpoint": "getTokenAccounts", "fetched_at": "..." } ],
+  "disclaimer": "Survival-signal summary, not a prediction of price or revival."
+}
+```
+
+`score` is `null`, never `0`, when nothing could be observed.
+
+### `GET /relic/{mint}/tags`
+
+```jsonc
+{ "mint": "...", "tags": [ /* Tag[] */ ] }
+```
+
+### `GET /stall`
+
+Query: `?sort=record|recent|listings` and `?limit=` and `?cursor=`.
+
+```jsonc
+{
+  "stalls": [
+    {
+      "owner": "Curat0r...",
+      "pubkey": "StallPDA...",
+      "bond_amount": "1000000000",
+      "opened_at": "...",
+      "listings_count": 24,
+      "resolved_wins": 9,
+      "resolved_losses": 11,
+      "resolved_pending": 4,
+      "slashed": false,
+      "uri": "https://..."
+    }
+  ],
+  "next_cursor": null
+}
+```
+
+**There is deliberately no `win_rate` field.** Wins and losses ship as raw
+counts of equal standing, and clients display both. A single rate lets a track
+record hide its losses behind a denominator.
+
+### `GET /stall/{owner}`
+
+The stall record above, extended with that stall's `listings[]`. Each listing
+carries `mint`, `relic_score_at_listing`, `thesis`, `outcome`, `listed_at` and
+`resolved_at`. `outcome` is free-form on the wire and is one of `win`, `loss`,
+`pending`, or `null` while unresolved.
+
+### `GET /crate` and `GET /crate/{id}`
+
+```jsonc
+{
+  "id": 3,
+  "creator": "...",
+  "name": "Q4 2025 survivors",
+  "components": [ { "mint": "...", "weight_bps": 2500, "relic_score": 51 } ],
+  "created_at": "...",
+  "last_rebalanced_at": "...",
+  "rebalance_count": 2,
+  "frozen": false
+}
+```
+
+`GET /crate` returns a collection. The SDK accepts both a bare array and a
+`{ "crates": [...], "next_cursor": ... }` envelope and normalises them to the
+envelope shape.
+
+### `POST /haggle/quote`
+
+```jsonc
+// request
+{ "input_mint": "So111...", "output_mint": "...", "amount": "1000000", "slippage_bps": 100 }
+
+// response
+{
+  "in_amount": "1000000",
+  "out_amount": "412300000",
+  "price_impact_bps": 340,
+  "min_out": "408177000",
+  "route": [ { "amm": "...", "in_mint": "...", "out_mint": "...", "fee_bps": 25 } ],
+  "source": "jupiter",
+  "warning": "Thin liquidity: price impact above 3%."   // null when there is nothing to warn about
+}
+```
+
+BAZR does not operate its own DEX, order book or perpetuals venue. This
+endpoint computes over existing liquidity routes. When Jupiter is used
+underneath, `source` says `jupiter`. Whatever produced the route is named.
+
+Thin liquidity is the normal case in this segment of the market, so
+`price_impact_bps` and `warning` are part of the contract rather than an
+optional extra.
+
+### `GET /market/stats`
+
+Real measurements only. A value that does not exist is omitted or sent as
+`null`, and clients render nothing for it rather than substituting a
+placeholder.
+
+```jsonc
+{
+  "relics_scored": 0,
+  "stalls": 0,
+  "aftermarket_volume_usd": null,
+  "crates_live": 0,
+  "anchor_version": "0.31.1",
+  "data_cluster": "mainnet",       // chain the scored tokens are read from
+  "program_cluster": "devnet"      // chain the Anchor program is deployed on
+}
+```
+
+The block above illustrates the shape. The numbers a given deployment returns
+are whatever it has actually counted.
+
+There are two chains here, and the response names both. `data_cluster` is the
+chain the scoring RPC reads, because that is where graduated tokens live.
+`program_cluster` is the chain the Anchor program is deployed on. Those are not
+the same fact, and a single `cluster` field reporting only the first is how a
+header comes to advertise a devnet program as running on mainnet.
+
+`program_cluster` is **absent from the response rather than `null` when nothing
+is deployed**: with no deployment there is no cluster to name. Clients treat it
+as an optional field. Do not substitute a default for it, and in particular
+never fill it in from `data_cluster` — that substitution produces exactly the
+false claim this split exists to prevent. `anchor_version` describes the same
+deployment, so a client that has no `program_cluster` has nothing for that
+version string to be about either.
+
