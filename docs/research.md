@@ -319,3 +319,46 @@ Graduation is decided per token from the on-chain migration itself.
 
 ---
 
+## 6. Jupiter routing
+
+### 6.1 Endpoint and parameters `[verified]`
+
+- Quote endpoint: **`https://api.jup.ag/swap/v1/quote`** (Metis). Source:
+  [Jupiter get-quote](https://developers.jup.ag/docs/swap/get-quote)
+- Request parameters: `inputMint`, `outputMint`, `amount` (atomic, raw),
+  `slippageBps`, `onlyDirectRoutes` (restricts to a single hop, default false,
+  and often unfavourable when enabled), `maxAccounts` (upper bound on inner swap
+  accounts), `restrictIntermediateTokens` (route only through liquid tokens),
+  `swapMode`, `asLegacyTransaction`, and `platformFeeBps` with `feeAccount`.
+  Sources: get-quote above,
+  [jupiter-quote-api-node swagger](https://github.com/jup-ag/jupiter-quote-api-node/blob/main/swagger.yaml)
+- Response fields: `outAmount`, `otherAmountThreshold` (the minimum after
+  slippage), **`priceImpactPct`**, `routePlan` (the route array), `swapMode`, and
+  `mostReliableAmmsQuoteReport`. Source: get-quote above.
+
+### 6.2 Rate limits and keys `[verified, recent change]`
+
+- **`lite-api.jup.ag`, the keyless endpoint, was retired on 2025-12-31.** An API
+  key from `portal.jup.ag` is now required. The **free tier allows 60 req/min**
+  on a 60-second sliding window, counted per account. Sources:
+  [Jupiter portal rate limits](https://developers.jup.ag/docs/portal/rate-limits),
+  [dev.jup.ag rate limit](https://dev.jup.ag/portal/rate-limit)
+- **Implication for security**: the Jupiter key is a secret. It must never be
+  exposed through a client-visible environment variable and is called only from a
+  server-side proxy. The `source: "jupiter"` field in
+  [`./api-contract.md`](./api-contract.md) exists so that this dependency is
+  stated rather than passed off as an in-house router.
+
+### 6.3 Reporting price impact honestly in thin liquidity `[verified + design decision]`
+
+- Jupiter's `priceImpactPct` is trustworthy, but **the quote has to be requested
+  at the size actually being traded** for a thin pool's impact to appear. A quote
+  for a tiny amount reports an impact close to zero regardless. Source:
+  [QuickNode on Jupiter](https://www.quicknode.com/docs/solana/jupiter-transactions)
+- `POST /haggle/quote` in [`./api-contract.md`](./api-contract.md) already
+  requires `price_impact_bps` alongside a `warning` string reading
+  "Thin liquidity: price impact above 3%.". The constant-product formula in
+  section 7.3 provides an independent cross-check on the quoted impact.
+
+---
+
