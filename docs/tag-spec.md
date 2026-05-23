@@ -185,3 +185,23 @@ flowchart LR
 - **Display copy:** `Creator wallet holds ~N% of supply.`
 - **evidence:** `{ creator, attribution: "signer" | "first-funder" | "coin_creator", dev_pct, wallets: [...] }`
 
+## 7. `bundle-launch`
+
+- **Observed fact:** at launch, multiple wallets bought in a coordinated way (same slot, or
+  a shared funding source) and together took a substantial share of supply.
+- **Threshold:** `K >= 5` wallets buying at or immediately adjacent to the launch slot
+  **and** a combined acquired supply of `>= 15%`. A Solana slot is roughly 400ms, so
+  distinct wallets filling in the same slot is a coordination signal. Secondary
+  corroboration: a **shared funding source** shortly before launch, or **fresh wallets**
+  with no prior history.
+- **severity:** `caution` - **confidence:** `medium`
+- **False-positive risk:**
+  - **Ordinary snipers and MEV bots also land in the same slot.** They cannot be separated
+    from insiders with certainty, which is exactly why the copy says "bundled buys
+    observed" and never uses an accusatory noun.
+  - Same-slot coincidence is possible, if unlikely. The shared-funder and fresh-wallet
+    corroboration is carried in the evidence so a reader can judge it.
+  - **Presentation is numeric**: bundled supply X%, K wallets, currently holding Y%.
+- **Display copy:** `Bundled buys observed at launch - K wallets took ~X% (now hold ~Y%).`
+- **evidence:** `{ launch_slot, wallets: [...], bundled_pct, current_hold_pct, shared_funder, fresh_wallets }`
+
