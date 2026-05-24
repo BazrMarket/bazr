@@ -348,3 +348,14 @@ false claim this split exists to prevent. `anchor_version` describes the same
 deployment, so a client that has no `program_cluster` has nothing for that
 version string to be about either.
 
+## Endpoints that will not exist
+
+BAZR covers one span of time: **after graduation**. The following are outside
+that span and are the established territory of general-purpose Solana
+terminals, so building them would only produce a copy:
+
+- New-token feeds or just-launched listings
+- Live trending or top-gainer rankings
+- Sniping and automated buying of any kind
+- A self-operated order book, perpetuals venue or AMM
+
