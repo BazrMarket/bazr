@@ -205,3 +205,21 @@ flowchart LR
 - **Display copy:** `Bundled buys observed at launch - K wallets took ~X% (now hold ~Y%).`
 - **evidence:** `{ launch_slot, wallets: [...], bundled_pct, current_hold_pct, shared_funder, fresh_wallets }`
 
+## 8. `sniper-cluster`
+
+- **Observed fact:** within the first slots after launch, a cluster of wallets bought and
+  those wallets link back to a shared funding source.
+- **Threshold:** among wallets buying within the **first N = 5 slots** after launch, a
+  cluster of size `>= 4` connected by a shared funder. Where `bundle-launch` is
+  "simultaneous with launch", this is "coordinated entry immediately after".
+- **severity:** `caution` - **confidence:** `medium` when the funding link is confirmed,
+  `low` when only the timing is close
+- **False-positive risk:**
+  - **Independent sniper bots** can cluster by coincidence. Without a funding-graph link
+    the confidence stays `low`.
+  - If the shared funder is a **common service** such as an exchange withdrawal address or
+    a bundler tip wallet, unrelated wallets get grouped together. Known shared services are
+    excluded from clustering.
+- **Display copy:** `Sniper cluster observed - M wallets entered within N slots from a shared funder.`
+- **evidence:** `{ cluster_size, first_slots, shared_funder, wallets: [...] }`
+
