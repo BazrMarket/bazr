@@ -223,3 +223,29 @@ flowchart LR
 - **Display copy:** `Sniper cluster observed - M wallets entered within N slots from a shared funder.`
 - **evidence:** `{ cluster_size, first_slots, shared_funder, wallets: [...] }`
 
+## 9. `rug-history`
+
+- **Observed fact:** the identified creator wallet is linked to earlier tokens where
+  liquidity was removed, or where authorities were abused, leaving the token at roughly
+  zero liquidity.
+- **Threshold:** the attributed creator wallet links to `>= 1` earlier mint where either
+  (a) LP was withdrawn and `quote_usd` fell to approximately 0, or (b) there are traces of
+  freeze abuse. The count N is reported as observed.
+- **severity:** `alert` - **confidence:** `low` by default, `medium` with multiple
+  corroborating funding or signature links
+- **False-positive risk - highest of any label here, handle with care:**
+  - **Wallet reuse and misattribution.** A shared funding source does not make two
+    deployments the same person. Proxies, paid deployments and sold wallets all exist.
+  - **"Rug" is a subjective definition.** On-chain data cannot cleanly separate natural
+    abandonment from deliberate withdrawal. The copy therefore avoids the accusatory word
+    and describes the observation instead: "N earlier tokens went to ~0 liquidity".
+  - **Data dependency.** The label requires a creator-history index. Where that index is
+    unavailable, the label is emitted with `observed: false` and is not displayed. It is
+    never inferred from a guess.
+  - A false positive here does real harm to an innocent party. The evidence must therefore
+    list the linked mints and their basis, and the confidence stays deliberately low.
+- **Display copy:** `Creator wallet is linked to N earlier token(s) that went to ~0 liquidity.`
+- **evidence:** `{ creator, linked_mints: [{ mint, outcome, evidence_sig }], attribution_confidence }`
+
+---
+
