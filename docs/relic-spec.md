@@ -530,3 +530,51 @@ deciding axis disagree, the deciding axis wins.
 
 ---
 
+## 10. Worked example
+
+Hypothetical observations, included so an implementation can check itself end to end.
+
+```text
+holder_dispersion: top10=0.45, top1=0.22, n_eff=180
+                   base = lerp(0.45, 0.20, 0.85, 100, 0) = 61.5 -> 62
+
+lp_residual:       quote_usd = $4,200, all pools burned
+                   depth = loglerp(4200, 300, 30000, 0, 100)
+                         = lerp(log10 4200 = 3.623, log10 300 = 2.477, log10 30000 = 4.477, 0, 100)
+                         = (3.623 - 2.477) / (4.477 - 2.477) * 100 = 57.3
+                   sec = 0 -> 57
+
+floor_shape:       active_days = 9/30, since_last = 3
+                   lerp(0.30, 0.05, 0.80, 0, 100) = 33.3
+                   -lerp(3, 2, 14, 0, 45) = -15 -> 18
+
+dev_wallet_state:  mint = null, freeze = null, dev_pct = 0.06, dev_recent_out = 0
+                   100 - lerp(0.06, 0.03, 0.30, 0, 30) = 100 - 3.3 = 96.7 -> 97
+
+social_afterglow:  unique_traders = 40, new_holders = 12, trend = -0.05
+                   breadth = lerp(40, 3, 150, 0, 60)   = 15.1
+                   inflow  = lerp(12, 1, 80, 0, 25)    =  3.5
+                   trendc  = lerp(-0.05, -0.30, 0.20, -15, 15) = 0
+                   total = 18.6 -> 19
+```
+
+Aggregation with all five axes available, `W_avail = 1.00`:
+
+```text
+relic = 0.30*57 + 0.25*18 + 0.20*62 + 0.15*97 + 0.10*19
+      = 17.1 + 4.5 + 12.4 + 14.55 + 1.9
+      = 50.45 -> 50
+
+verdict: lp_residual is ok, W_avail = 1.0, lp_residual > 10, relic = 50 is in 34..59
+      -> "unclear"
+
+contributions: lp 17.1 / floor 4.5 / holder 12.4 / dev 14.55 / social 1.9   (sum 50.45 = relic)
+```
+
+Read in words: liquidity is burned and still present, holders are reasonably spread, but
+the trading floor has cooled recently. There is not enough agreement between the axes to
+call this dead, and not enough exit-side confidence to call it dormant. `unclear` is the
+correct output, and an implementation that reports something more decisive here is wrong.
+
+---
+
