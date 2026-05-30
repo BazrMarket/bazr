@@ -162,3 +162,29 @@ written.
 - **A leaked key is rotated, not deleted.** Removing a commit does not remove it from
   clones or from anything that already fetched it. Rotate first, then clean up.
 
+## Browser extension permissions
+
+The overlay is built to the narrowest permission set that lets it do its one job. These
+are the rules it follows:
+
+- Static host permissions cover only the BAZR API origins that the shared constants pin.
+  Any other origin, including a self-hosted API, requires a runtime permission the user
+  grants explicitly.
+- Content scripts run on a fixed list of supported sites rather than on all URLs.
+- No wallet connection, no transaction signing, no private key ever touches the
+  extension. Its entire message surface is reads, settings and cache control.
+- Responses are cached for ten minutes, and addresses that turn out not to be mints are
+  cached as negatives for a day, so repeated browsing does not translate into repeated
+  requests.
+
+The authoritative check is the `manifest.json` inside the packaged build. If a permission
+appears there that is not on this list, treat it as a defect and report it through
+[SECURITY.md](../SECURITY.md).
+
+One privacy consequence is unavoidable and should be stated rather than buried. To hang a
+tag on an address, the extension asks the BAZR API about that address. The API therefore
+learns which mint addresses appear on pages the user visits. It does not receive the page
+URL, the page content, or an account identity, and the cache reduces how often it is
+asked at all. A user who does not want that exchange should not install the overlay; the
+web interface answers the same question without a browser extension.
+
