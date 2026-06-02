@@ -249,3 +249,24 @@ flowchart LR
 
 ---
 
+## 10. Summary
+
+| key | Display label | severity | Default confidence | Threshold | Primary false-positive source |
+| --- | --- | --- | --- | --- | --- |
+| `mint-authority-live` | Mint authority is live | alert | high | `mintAuthority != null` | Almost none; a few legitimate designs |
+| `freeze-authority-live` | Freeze authority is live | alert | high | `freezeAuthority != null` | Almost none; pump freeze is not always revoked |
+| `lp-burned` | LP burned | info | high/medium | `burn_pct >= 99` or confirmed migration burn | Token-2022 semantics, multi-pool, partial burn |
+| `lp-locked` | LP locked | info | high/medium | Known locker and `unlock_time > now` | Unknown locker (false negative), expired lock |
+| `lp-thin` | Thin liquidity | caution | high | Summed `quote_usd < $1,000` | Unsummed pools, stale reserves |
+| `dev-holds-N%` | Creator holds ~N% | caution/alert | medium | `dev_pct >= 5%` | Creator misattribution, LP misclassified |
+| `bundle-launch` | Bundled buys at launch | caution | medium | `K >= 5` wallets same slot and `>= 15%` | Ordinary snipers and MEV, coincidence |
+| `sniper-cluster` | Sniper cluster | caution | medium/low | `>= 4` in the first `5` slots from a shared funder | Independent bots, shared service funders |
+| `rug-history` | Creator linked to dead tokens | alert | low/medium | `>= 1` earlier mint at ~0 liquidity | Wallet reuse, subjective definition, data dependency |
+
+**severity and confidence are independent.** A risk can be large and still uncertain, which
+is exactly the `rug-history` case (`alert` with `low`). Interfaces must visualise the two
+separately - risk size through colour or icon, certainty through observational phrasing and
+expandable evidence. Merging them is what turns an observation into an accusation.
+
+---
+
