@@ -359,3 +359,9 @@ terminals, so building them would only produce a copy:
 - Sniping and automated buying of any kind
 - A self-operated order book, perpetuals venue or AMM
 
+## Rate limits
+
+- Anonymous: `/relic/{mint}` at 30 req/min; `?refresh=true` at 5 req/min.
+- Exceeding a limit returns `429` with a `Retry-After` header. The service does
+  not answer a throttled request with a quiet empty payload.
+
