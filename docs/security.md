@@ -188,3 +188,37 @@ URL, the page content, or an account identity, and the cache reduces how often i
 asked at all. A user who does not want that exchange should not install the overlay; the
 web interface answers the same question without a browser extension.
 
+## Reproducible builds and dependency checks
+
+Verifying a claim about code means building the code yourself.
+
+**On-chain program.** Dependencies are pinned to `anchor-lang` 0.31.1 and `anchor-spl`
+0.31.1. The release profile fixes `codegen-units = 1`, `lto = "fat"` and
+`overflow-checks = true`, so the build is both safer and less sensitive to the machine
+that ran it. For an artifact you can compare against a deployment, build in Anchor's
+verifiable mode and check the result against the chain:
+
+```bash
+anchor build --verifiable
+solana program show FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb
+```
+
+If the deployed hash does not match a build you produced from a known commit, the
+deployment is not this source, whatever any document says.
+
+**TypeScript packages.** The SDK declares exactly one runtime dependency, `zod`. After
+installing, confirm it:
+
+```bash
+npm ls --omit=dev
+```
+
+Anything beyond that single package is a supply-chain question worth answering before
+shipping. The extension carries no runtime dependency at all and builds with a single
+bundler as a development dependency. Install from a committed lockfile with `npm ci`
+where one is present so the tree is pinned; where a lockfile is missing, that gap is
+itself worth raising.
+
+**Published artifacts.** Do not trust a package you cannot trace back to a tagged commit
+in this repository. A version number is not provenance.
+
