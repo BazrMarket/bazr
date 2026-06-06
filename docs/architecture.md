@@ -262,3 +262,23 @@ The routing layer follows the same rule. Quotes are computed over existing liqui
 and every quote response names its `source` plainly, so a reader always knows whether
 they are looking at BAZR arithmetic or a third-party route.
 
+## External dependencies, stated plainly
+
+| Dependency | What it stands in for | What BAZR does itself |
+|---|---|---|
+| Solana JSON-RPC | Account state, transaction history, program logs | Address derivation from the seed constants, account decoding, event handling |
+| Helius DAS, `getTokenAccounts` and `getAsset` | Enumerating holders at scale, reading mint and freeze authority | The exclusion set that removes pool vaults, burn addresses, labelled exchange wallets and insider clusters before any dispersion maths, and all weighting |
+| Jupiter | Swap routing and quotes across liquidity that already exists | Nothing about matching. There is no BAZR automated market maker, order book or perpetual. The quote response reports its `source` |
+| Quote price feed for USD conversion | Turning quote-side pool balances into a dollar depth | The failure rule: if the price cannot be observed, `lp_residual` becomes `unknown` instead of being filled with an estimate |
+
+Two things follow from that table.
+
+First, these providers are reached only from the service side. Every BAZR client speaks
+to the BAZR HTTP API and to nothing else. The SDK takes a `baseUrl` and a `fetch`, and
+the extension compiles in only the BAZR API origins. Neither carries a provider key,
+because neither talks to a provider.
+
+Second, every relic response carries a `sources` array naming what was actually
+consulted and when. A score that could not be built from a source says so through an
+axis marked `unknown` rather than through a lower number.
+
