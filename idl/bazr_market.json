@@ -1,0 +1,2155 @@
+{
+  "address": "FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb",
+  "metadata": {
+    "name": "bazr_market",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "BAZR aftermarket: stall registry, listing ledger, bond escrow and crate vault"
+  },
+  "instructions": [
+    {
+      "name": "close_stall",
+      "docs": [
+        "Return the bond. Refused for a slashed stall or one with pending listings."
+      ],
+      "discriminator": [
+        21,
+        131,
+        12,
+        58,
+        63,
+        120,
+        109,
+        28
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "stall",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "stall"
+          ]
+        },
+        {
+          "name": "bazr_mint",
+          "writable": true
+        },
+        {
+          "name": "owner_token_account",
+          "writable": true
+        },
+        {
+          "name": "bond_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  110,
+                  100,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_crate",
+      "docs": [
+        "Issue a meme basket. Weights must sum to 10000 bps."
+      ],
+      "discriminator": [
+        52,
+        253,
+        8,
+        10,
+        147,
+        201,
+        59,
+        115
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "crate_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "arg",
+                "path": "crate_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "crate_id",
+          "type": "u64"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "mints",
+          "type": {
+            "vec": "pubkey"
+          }
+        },
+        {
+          "name": "weights",
+          "type": {
+            "vec": "u16"
+          }
+        }
+      ]
+    },
+    {
+      "name": "freeze_crate",
+      "docs": [
+        "Lock the composition for good."
+      ],
+      "discriminator": [
+        184,
+        145,
+        105,
+        128,
+        61,
+        26,
+        41,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "crate_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "account",
+                "path": "crate_account.crate_id",
+                "account": "Crate"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "signer": true,
+          "relations": [
+            "crate_account"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_market",
+      "docs": [
+        "Create the global config PDA and the bond escrow. Authority only, once."
+      ],
+      "discriminator": [
+        35,
+        35,
+        189,
+        193,
+        155,
+        48,
+        170,
+        203
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "bond_vault",
+          "docs": [
+            "Bond escrow. Owned by the market PDA, so only this program can move it."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  110,
+                  100,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "bazr_mint"
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "stall_bond_amount",
+          "type": "u64"
+        },
+        {
+          "name": "slash_bps",
+          "type": "u16"
+        },
+        {
+          "name": "fee_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "list_relic",
+      "docs": [
+        "Put a meme on the stall, committing the relic score and thesis hash."
+      ],
+      "discriminator": [
+        173,
+        194,
+        144,
+        132,
+        131,
+        133,
+        53,
+        240
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "stall",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "stall"
+          ]
+        },
+        {
+          "name": "mint",
+          "docs": [
+            "The meme being put back on the table."
+          ]
+        },
+        {
+          "name": "listing",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "stall"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "relic_score_at_listing",
+          "type": "u16"
+        },
+        {
+          "name": "thesis_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "open_stall",
+      "docs": [
+        "Open a stall by escrowing the market's bond."
+      ],
+      "discriminator": [
+        147,
+        206,
+        223,
+        18,
+        25,
+        251,
+        189,
+        141
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "stall",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "bazr_mint",
+          "writable": true
+        },
+        {
+          "name": "owner_token_account",
+          "writable": true
+        },
+        {
+          "name": "bond_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  110,
+                  100,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "rebalance_crate",
+      "docs": [
+        "Replace a crate's composition. Weights must sum to 10000 bps again."
+      ],
+      "discriminator": [
+        4,
+        185,
+        97,
+        33,
+        102,
+        57,
+        41,
+        173
+      ],
+      "accounts": [
+        {
+          "name": "crate_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  114,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "creator"
+              },
+              {
+                "kind": "account",
+                "path": "crate_account.crate_id",
+                "account": "Crate"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator",
+          "signer": true,
+          "relations": [
+            "crate_account"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "mints",
+          "type": {
+            "vec": "pubkey"
+          }
+        },
+        {
+          "name": "weights",
+          "type": {
+            "vec": "u16"
+          }
+        }
+      ]
+    },
+    {
+      "name": "resolve_listing",
+      "docs": [
+        "Record how a listing ended. Survived and Faded are recorded alike."
+      ],
+      "discriminator": [
+        37,
+        119,
+        94,
+        236,
+        176,
+        97,
+        72,
+        125
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "market"
+          ]
+        },
+        {
+          "name": "stall",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "stall.owner",
+                "account": "Stall"
+              }
+            ]
+          },
+          "relations": [
+            "listing"
+          ]
+        },
+        {
+          "name": "listing",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "stall"
+              },
+              {
+                "kind": "account",
+                "path": "listing.mint",
+                "account": "Listing"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "outcome",
+          "type": {
+            "defined": {
+              "name": "ListingOutcome"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_stall_uri",
+      "docs": [
+        "Repoint the stall's evidence link. Touches no counter and no record."
+      ],
+      "discriminator": [
+        171,
+        28,
+        212,
+        78,
+        111,
+        117,
+        190,
+        113
+      ],
+      "accounts": [
+        {
+          "name": "stall",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "stall"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "slash_stall",
+      "docs": [
+        "Burn `slash_bps` of the bond and return the rest. Permanent mark."
+      ],
+      "discriminator": [
+        59,
+        24,
+        36,
+        195,
+        200,
+        220,
+        197,
+        134
+      ],
+      "accounts": [
+        {
+          "name": "market",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  114,
+                  107,
+                  101,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "market"
+          ]
+        },
+        {
+          "name": "stall",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "stall.owner",
+                "account": "Stall"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bazr_mint",
+          "docs": [
+            "Must be `mut`: an SPL burn CPI reduces supply on the mint account."
+          ],
+          "writable": true
+        },
+        {
+          "name": "owner_token_account",
+          "writable": true
+        },
+        {
+          "name": "bond_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  111,
+                  110,
+                  100,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "reason_code",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "withdraw_listing",
+      "docs": [
+        "Pull a still-pending listing. The record stays, marked Withdrawn."
+      ],
+      "discriminator": [
+        103,
+        7,
+        29,
+        205,
+        223,
+        74,
+        213,
+        15
+      ],
+      "accounts": [
+        {
+          "name": "stall",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  108,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          },
+          "relations": [
+            "listing"
+          ]
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "stall"
+          ]
+        },
+        {
+          "name": "listing",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "stall"
+              },
+              {
+                "kind": "account",
+                "path": "listing.mint",
+                "account": "Listing"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Crate",
+      "discriminator": [
+        241,
+        175,
+        117,
+        138,
+        154,
+        62,
+        170,
+        24
+      ]
+    },
+    {
+      "name": "Listing",
+      "discriminator": [
+        218,
+        32,
+        50,
+        73,
+        43,
+        134,
+        26,
+        58
+      ]
+    },
+    {
+      "name": "Market",
+      "discriminator": [
+        219,
+        190,
+        213,
+        55,
+        0,
+        227,
+        198,
+        154
+      ]
+    },
+    {
+      "name": "Stall",
+      "discriminator": [
+        61,
+        213,
+        105,
+        132,
+        164,
+        219,
+        230,
+        215
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "CrateCreated",
+      "discriminator": [
+        182,
+        67,
+        246,
+        158,
+        78,
+        59,
+        198,
+        133
+      ]
+    },
+    {
+      "name": "CrateFrozen",
+      "discriminator": [
+        138,
+        13,
+        100,
+        128,
+        115,
+        231,
+        181,
+        69
+      ]
+    },
+    {
+      "name": "CrateRebalanced",
+      "discriminator": [
+        231,
+        107,
+        67,
+        192,
+        30,
+        36,
+        144,
+        206
+      ]
+    },
+    {
+      "name": "ListingResolved",
+      "discriminator": [
+        44,
+        59,
+        107,
+        195,
+        98,
+        9,
+        181,
+        8
+      ]
+    },
+    {
+      "name": "ListingWithdrawn",
+      "discriminator": [
+        114,
+        224,
+        53,
+        247,
+        204,
+        14,
+        99,
+        254
+      ]
+    },
+    {
+      "name": "MarketInitialized",
+      "discriminator": [
+        134,
+        160,
+        122,
+        87,
+        50,
+        3,
+        255,
+        81
+      ]
+    },
+    {
+      "name": "RelicListed",
+      "discriminator": [
+        103,
+        12,
+        180,
+        34,
+        178,
+        147,
+        54,
+        216
+      ]
+    },
+    {
+      "name": "StallClosed",
+      "discriminator": [
+        251,
+        187,
+        83,
+        121,
+        240,
+        71,
+        12,
+        10
+      ]
+    },
+    {
+      "name": "StallOpened",
+      "discriminator": [
+        175,
+        139,
+        234,
+        212,
+        161,
+        168,
+        148,
+        15
+      ]
+    },
+    {
+      "name": "StallSlashed",
+      "discriminator": [
+        249,
+        110,
+        186,
+        159,
+        217,
+        154,
+        227,
+        143
+      ]
+    },
+    {
+      "name": "StallUriUpdated",
+      "discriminator": [
+        179,
+        75,
+        219,
+        215,
+        249,
+        170,
+        81,
+        147
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "MarketPaused",
+      "msg": "Market is paused; no new stalls or listings are accepted"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidBps",
+      "msg": "Basis points value must be between 0 and 10000"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidBondAmount",
+      "msg": "Stall bond amount must be greater than zero"
+    },
+    {
+      "code": 6003,
+      "name": "InsufficientBond",
+      "msg": "Bond token balance is below the stall bond required by the market"
+    },
+    {
+      "code": 6004,
+      "name": "BondMintMismatch",
+      "msg": "Token account mint does not match the market bond mint"
+    },
+    {
+      "code": 6005,
+      "name": "TokenOwnerMismatch",
+      "msg": "Token account owner does not match the stall owner"
+    },
+    {
+      "code": 6006,
+      "name": "StallSlashed",
+      "msg": "Stall has been slashed; it can no longer list, close or reclaim its bond"
+    },
+    {
+      "code": 6007,
+      "name": "StallHasActiveListings",
+      "msg": "Stall still has unresolved listings; resolve or withdraw them first"
+    },
+    {
+      "code": 6008,
+      "name": "BondAlreadyReleased",
+      "msg": "Stall bond has already been released"
+    },
+    {
+      "code": 6009,
+      "name": "UriTooLong",
+      "msg": "Evidence URI exceeds the maximum length of 96 bytes"
+    },
+    {
+      "code": 6010,
+      "name": "UriEmpty",
+      "msg": "Evidence URI must not be empty"
+    },
+    {
+      "code": 6011,
+      "name": "RelicScoreOutOfRange",
+      "msg": "Relic score must be between 0 and 1000"
+    },
+    {
+      "code": 6012,
+      "name": "EmptyThesisHash",
+      "msg": "Thesis hash must not be all zeroes; a listing requires published reasoning"
+    },
+    {
+      "code": 6013,
+      "name": "ListingNotPending",
+      "msg": "Listing is not pending; it has already been resolved or withdrawn"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidResolution",
+      "msg": "Resolution outcome must be Survived or Faded"
+    },
+    {
+      "code": 6015,
+      "name": "CrateNameEmpty",
+      "msg": "Crate name must not be empty"
+    },
+    {
+      "code": 6016,
+      "name": "CrateNameTooLong",
+      "msg": "Crate name exceeds the maximum length of 32 bytes"
+    },
+    {
+      "code": 6017,
+      "name": "EmptyBasket",
+      "msg": "Crate must hold at least one mint"
+    },
+    {
+      "code": 6018,
+      "name": "TooManyMints",
+      "msg": "Crate holds more than the maximum of 16 mints"
+    },
+    {
+      "code": 6019,
+      "name": "BasketLengthMismatch",
+      "msg": "Mint list and weight list must have the same length"
+    },
+    {
+      "code": 6020,
+      "name": "ZeroWeight",
+      "msg": "Every crate weight must be greater than zero"
+    },
+    {
+      "code": 6021,
+      "name": "WeightsNotFullyAllocated",
+      "msg": "Crate weights must sum to exactly 10000 basis points"
+    },
+    {
+      "code": 6022,
+      "name": "DuplicateMint",
+      "msg": "Crate contains the same mint more than once"
+    },
+    {
+      "code": 6023,
+      "name": "CrateFrozen",
+      "msg": "Crate is frozen; the issuer can no longer rebalance it"
+    },
+    {
+      "code": 6024,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    }
+  ],
+  "types": [
+    {
+      "name": "Crate",
+      "docs": [
+        "A meme basket, PDA `[\"crate\", creator, crate_id_le]`.",
+        "",
+        "The crate is a weighting record only: it holds no user funds and takes no",
+        "custody. `weights` always sums to 10000 bps, enforced on create and on every",
+        "rebalance, so a crate can never quietly under-allocate."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "crate_id",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "last_rebalanced_at",
+            "docs": [
+              "Equal to `created_at` until the first rebalance."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "rebalance_count",
+            "type": "u32"
+          },
+          {
+            "name": "frozen",
+            "docs": [
+              "Once frozen the composition is final; the issuer cannot rebalance again."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "mints",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "weights",
+            "docs": [
+              "Basis points per mint, index-aligned with `mints`, summing to 10000."
+            ],
+            "type": {
+              "vec": "u16"
+            }
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved tail + padding: brings LEN to 680 (85 * 8)."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                30
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CrateCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "crate_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "crate_id",
+            "type": "u64"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "mints",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "weights",
+            "type": {
+              "vec": "u16"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CrateFrozen",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "crate_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "crate_id",
+            "type": "u64"
+          },
+          {
+            "name": "rebalance_count",
+            "type": "u32"
+          },
+          {
+            "name": "frozen_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CrateRebalanced",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "crate_account",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "crate_id",
+            "type": "u64"
+          },
+          {
+            "name": "mints",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "weights",
+            "type": {
+              "vec": "u16"
+            }
+          },
+          {
+            "name": "rebalance_count",
+            "type": "u32"
+          },
+          {
+            "name": "last_rebalanced_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Listing",
+      "docs": [
+        "A meme put on a stall, PDA `[\"listing\", stall, mint]`.",
+        "",
+        "The record is never deleted. Withdrawing sets `Withdrawn` rather than closing",
+        "the account, so a stall cannot erase a call it no longer likes."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "stall",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "thesis_hash",
+            "docs": [
+              "Hash of the off-chain thesis text, committed at listing time so the",
+              "reasoning cannot be rewritten after the outcome is known."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "listed_at",
+            "type": "i64"
+          },
+          {
+            "name": "resolved_at",
+            "docs": [
+              "Zero while Pending."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "relic_score_at_listing",
+            "docs": [
+              "Relic score at listing time, 0..=1000. A survival summary, not a forecast."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "outcome",
+            "type": {
+              "defined": {
+                "name": "ListingOutcome"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved tail + padding: brings LEN to 152 (19 * 8)."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                36
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingOutcome",
+      "docs": [
+        "How a listing ended. `Pending` is the only state that can still change."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Survived"
+          },
+          {
+            "name": "Faded"
+          },
+          {
+            "name": "Withdrawn"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingResolved",
+      "docs": [
+        "Carries both sides of the stall's record. An indexer reading this event can",
+        "render wins and losses without a second fetch, so there is no cheap path to",
+        "a leaderboard that shows only the wins."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "stall",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "outcome",
+            "type": {
+              "defined": {
+                "name": "ListingOutcome"
+              }
+            }
+          },
+          {
+            "name": "resolved_at",
+            "type": "i64"
+          },
+          {
+            "name": "stall_resolved_wins",
+            "type": "u32"
+          },
+          {
+            "name": "stall_resolved_losses",
+            "type": "u32"
+          },
+          {
+            "name": "stall_reputation",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ListingWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "stall",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "withdrawn_at",
+            "type": "i64"
+          },
+          {
+            "name": "active_listings",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Market",
+      "docs": [
+        "Global config, PDA `[\"market\"]`. One per deployment."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "Authority allowed to resolve listings, slash stalls and pause the market."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bazr_mint",
+            "docs": [
+              "SPL / Token-2022 mint used for stall bonds."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bond_vault",
+            "docs": [
+              "Bond escrow token account, PDA `[\"bond_vault\"]`, owned by this market PDA."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "stall_bond_amount",
+            "docs": [
+              "Bond a stall must escrow to open, in `bazr_mint` base units."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_stalls",
+            "docs": [
+              "Stalls currently open (decremented on close)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_listings",
+            "docs": [
+              "Listings ever created (never decremented -- the ledger is append-only)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_crates",
+            "docs": [
+              "Crates ever created."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_resolved_wins",
+            "docs": [
+              "Listings resolved as Survived, across every stall."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_resolved_losses",
+            "docs": [
+              "Listings resolved as Faded, across every stall. Same width as wins:",
+              "the market-wide failure count is never allowed to be cheaper to store."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_bond_burned",
+            "docs": [
+              "Bond burned by slashing, in `bazr_mint` base units."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "slash_bps",
+            "docs": [
+              "Share of a bond burned when a stall is slashed, in basis points."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "fee_bps",
+            "docs": [
+              "Protocol fee in basis points. Reserved for the haggle router; the market",
+              "program itself does not charge it."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "paused",
+            "docs": [
+              "When true, `open_stall` and `list_relic` are refused."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved tail + padding: brings LEN to 224 (28 * 8)."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                65
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "market",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "bazr_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "bond_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "stall_bond_amount",
+            "type": "u64"
+          },
+          {
+            "name": "slash_bps",
+            "type": "u16"
+          },
+          {
+            "name": "fee_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RelicListed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "listing",
+            "type": "pubkey"
+          },
+          {
+            "name": "stall",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "relic_score_at_listing",
+            "type": "u16"
+          },
+          {
+            "name": "thesis_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "listed_at",
+            "type": "i64"
+          },
+          {
+            "name": "listings_count",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Stall",
+      "docs": [
+        "A curator's pitch table, PDA `[\"stall\", owner]`.",
+        "",
+        "`resolved_wins` and `resolved_losses` are both `u32` on purpose. BAZR's",
+        "honesty gate requires a stall's failures to be recorded at the same fidelity",
+        "as its successes -- a schema that counts only wins cannot be fixed later by",
+        "the UI, so the constraint lives here in the account layout.",
+        "",
+        "The account is never deallocated. `close_stall` returns the bond and stamps",
+        "`closed_at`, but leaves the record in place: the PDA is derived from the",
+        "owner, so closing-and-reopening would otherwise reset a losing track record",
+        "to zero."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "bond_amount",
+            "docs": [
+              "Bond currently escrowed for this stall. Zero once closed or slashed."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "slashed_amount",
+            "docs": [
+              "Bond burned by a slash. Permanent record; never reset."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "opened_at",
+            "type": "i64"
+          },
+          {
+            "name": "closed_at",
+            "docs": [
+              "Zero while the stall is open. Set by `close_stall`."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "reputation",
+            "docs": [
+              "Cumulative reputation: `+REPUTATION_STEP` per win, `-REPUTATION_STEP`",
+              "per loss. Signed, because a stall that is wrong more often than it is",
+              "right must be able to go below zero."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "listings_count",
+            "docs": [
+              "Listings ever created by this stall."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "active_listings",
+            "docs": [
+              "Listings still Pending."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "resolved_wins",
+            "type": "u32"
+          },
+          {
+            "name": "resolved_losses",
+            "type": "u32"
+          },
+          {
+            "name": "slashed",
+            "docs": [
+              "Permanent mark. A slashed stall can never list again or reclaim a bond."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "uri",
+            "docs": [
+              "Link to the stall's published reasoning (kept short: the full text lives",
+              "off-chain, its hash is committed per listing)."
+            ],
+            "type": "string"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved tail + padding: brings LEN to 216 (27 * 8)."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                26
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StallClosed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "stall",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "bond_returned",
+            "type": "u64"
+          },
+          {
+            "name": "resolved_wins",
+            "type": "u32"
+          },
+          {
+            "name": "resolved_losses",
+            "type": "u32"
+          },
+          {
+            "name": "reputation",
+            "type": "i64"
+          },
+          {
+            "name": "closed_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StallOpened",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "stall",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "bond_amount",
+            "type": "u64"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          },
+          {
+            "name": "opened_at",
+            "type": "i64"
+          },
+          {
+            "name": "total_stalls",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StallSlashed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "stall",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "bond_amount",
+            "type": "u64"
+          },
+          {
+            "name": "burned_amount",
+            "type": "u64"
+          },
+          {
+            "name": "returned_amount",
+            "type": "u64"
+          },
+          {
+            "name": "slash_bps",
+            "type": "u16"
+          },
+          {
+            "name": "reason_code",
+            "type": "u8"
+          },
+          {
+            "name": "slashed_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StallUriUpdated",
+      "docs": [
+        "Carries the URI it replaced, not just the new one. A stall's evidence link",
+        "is the only mutable field on the account, so a silent overwrite would let a",
+        "stall swap the reasoning behind its record without leaving a trace. The old",
+        "value rides along for the same reason `ListingResolved` carries losses next",
+        "to wins: the unflattering half is not cheaper to drop than to keep."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "stall",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "old_uri",
+            "type": "string"
+          },
+          {
+            "name": "new_uri",
+            "type": "string"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
+}
