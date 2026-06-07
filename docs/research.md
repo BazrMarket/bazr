@@ -362,3 +362,55 @@ Graduation is decided per token from the on-chain migration itself.
 
 ---
 
+## 7. Helius API: holder distribution, LP state, pool structure
+
+### 7.1 Holder distribution `[verified]`
+
+- `getTokenAccounts` (DAS): see section 3.3. All accounts for a mint, 1,000 per
+  page, cursor pagination.
+- `getAsset` (DAS): metadata for a single asset, including its authorities.
+
+### 7.2 Rate limits and pricing `[verified]`
+
+- Free tier: **1,000,000 credits per month and 10 RPC req/s**. Developer is
+  $49/mo (50 req/s), Business $499/mo (200 req/s), Professional $999/mo
+  (500 req/s). Sources: [Helius plans](https://www.helius.dev/docs/billing/plans),
+  [Helius RPC review 2026](https://coinsaga.com/news/altcoin-news/helius-solana-rpc-review-2026-free-plan-features-and-best-use-cases/)
+- **`[unverified]`**: the exact credit cost of a single `getTokenAccounts` call.
+  The specification therefore assumes only the direction, that a token with many
+  holders needs many paginated calls and consumes credits and rate budget
+  quickly, and requires a service-layer cache on the result. The exact unit cost
+  is to be measured from the provider dashboard during implementation.
+- **Implication**: the Helius key is a secret as well. It is server-side only and
+  reached through a proxy; browser code uses public RPC endpoints.
+
+### 7.3 PumpSwap pool structure `[verified]`
+
+This is where LP state and liquidity depth actually come from.
+
+- Program: `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA`, the same on mainnet and
+  devnet.
+- Pool PDA seeds: `["pool", index, creator, base_mint, quote_mint]`. LP mint PDA:
+  `["pool_lp_mint", pool]`.
+- Pool account fields: `pool_base_token_account` (base ATA),
+  `pool_quote_token_account` (quote ATA), `base_mint`, `quote_mint`, `lp_mint`,
+  `lp_supply` (total LP excluding user burns), `coin_creator` (fee recipient) and
+  `pool_bump`.
+- Reading reserves: `base_reserves = balance(pool_base_token_account)` and
+  `quote_reserves = balance(pool_quote_token_account)`. At graduation the quote
+  side is **WSOL**, and **only the real reserves migrate**; virtual reserves do
+  not exist on-chain.
+- Constant product: `base_reserves * quote_reserves = k`, with spot price
+  `price = quote_reserves / base_reserves`.
+  - Buy: `quote_in = (base_out * quote_reserves) / (base_reserves - base_out)`
+  - Sell: `quote_out = (base_in * quote_reserves) / (base_reserves + base_in)`
+- Sources: [DeepWiki: PumpSwap AMM mechanism](https://deepwiki.com/pump-fun/pump-public-docs/4.1-pumpswap-amm-mechanism),
+  [DeepWiki: pump.fun liquidity docs](https://deepwiki.com/pump-fun/pump-public-docs/4.4-liquidity-management)
+- **Implication**: the "real depth" behind `lp_residual` is taken from the
+  **quote side reserve (WSOL or USDC) converted to USD**. The base side is worth
+  nothing when there is only selling pressure against it. The constant-product
+  formula also yields an independently computed price impact, which cross-checks
+  the Jupiter quote.
+
+---
+
