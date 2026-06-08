@@ -282,3 +282,31 @@ Second, every relic response carries a `sources` array naming what was actually
 consulted and when. A score that could not be built from a source says so through an
 axis marked `unknown` rather than through a lower number.
 
+## What is not in this repository
+
+The service backend and the web front end are not here, and neither are the two client
+packages that ship on their own release cycle. That is a deliberate split rather than an
+omission. Specifically, the following are absent:
+
+- The indexer and the scoring engine implementation.
+- The HTTP API implementation, its caches, its rate limiting and its database.
+- The web front end.
+- The TypeScript SDK and the `bazr` command-line client. Both are open source in
+  [BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-sdk), and both are
+  versioned independently of this repository.
+- All credentials: provider API keys, wallet keys, deployment tokens. Nothing of the
+  sort belongs in a public repository under any circumstances.
+- Historical score data and database exports.
+
+What is here is the part a reader needs in order to check the claims rather than
+believe them: the on-chain rules that hold the ledger, the exact scoring formula, the
+wire contract, and a browser extension that reads every API response through that
+contract. A third party can score a token from [relic-spec.md](./relic-spec.md) using
+public RPC data and compare the result with what the API returned.
+
+The honest limitation of that split is worth stating in the same breath. From this
+repository alone you cannot verify that the running service implements the spec
+faithfully. You can verify the formula, verify the contract, verify what the clients
+accept, and compare live outputs against the spec, and that is where the check ends.
+[security.md](./security.md) covers the rest of what this design does and does not
+protect you from.
