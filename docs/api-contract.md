@@ -365,3 +365,20 @@ terminals, so building them would only produce a copy:
 - Exceeding a limit returns `429` with a `Retry-After` header. The service does
   not answer a throttled request with a quiet empty payload.
 
+## Client expectations
+
+A client implementing this contract is expected to:
+
+1. Validate every response against the schemas before use, and fail loudly when
+   the shape does not match.
+2. Honour `Retry-After` on `429`, and back off exponentially on `5xx` and on
+   network failures. Retrying a `4xx` other than `429` only burns quota.
+3. Render `disclaimer` wherever a score is shown.
+4. Render `resolved_wins` and `resolved_losses` together, never a derived rate
+   alone.
+5. Treat `status: "unknown"` as absent evidence, not as a zero score.
+6. Tolerate unknown `Tag.key` values and unknown extra fields.
+
+The reference implementation of all six is the TypeScript SDK in
+[BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-sdk).
+
