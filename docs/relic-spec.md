@@ -578,3 +578,35 @@ correct output, and an implementation that reports something more decisive here 
 
 ---
 
+## 11. Output shape
+
+Each element of `axes[]` in `GET /relic/{mint}` follows `Axis` in
+[`./api-contract.md`](./api-contract.md):
+
+```jsonc
+{
+  "key": "lp_residual",
+  "label": "Liquidity left",
+  "blurb": "Real quote-side liquidity still in the pool(s), and whether it is burned, locked, or pullable.",
+  "score": 57,                 // null when status is "unknown"
+  "weight": 0.30,              // raw weight from section 7, before re-normalisation
+  "contribution": 17.1,        // section 8: (W_a / W_avail) * score
+  "status": "ok",              // "ok" | "unknown"
+  "detail": { "quote_usd": 4200, "pools": [ /* ... */ ], "graduated": true }
+}
+```
+
+- Top-level `score` is `relic` from section 8, or `null` when no axis was observable.
+- Top-level `verdict` follows section 9, and `disclaimer` is always present.
+- **Every response carries all five axes.** An axis that could not be observed is included
+  with `status: "unknown"` and `score: null`. Axes are never omitted, because an omitted
+  axis is indistinguishable from an axis that was never defined.
+
+Canonical display labels are the ones listed per axis above. The TypeScript SDK also ships
+`AXIS_FALLBACK_LABELS` in its `src/schemas.ts`, in the separate
+[bazr-sdk](https://github.com/BazrMarket/bazr-sdk) repository; those are
+key-derived names used only when a payload omits an axis entirely, so a rendering surface
+always has some string to show.
+
+---
+
