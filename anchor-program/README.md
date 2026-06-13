@@ -37,3 +37,22 @@ the program must agree byte for byte or the PDA will not match.
 | `rebalance_crate`  | crate creator     | Same validation as create. Increments `rebalance_count` |
 | `freeze_crate`     | crate creator     | One-way. Composition becomes final |
 
+## What the layout guarantees
+
+These are the honesty constraints from [`../docs/stall-spec.md`](../docs/stall-spec.md)
+section 0, enforced in the account schema rather than in the UI, because a schema is the
+layer that cannot be quietly changed later. The equivalent constraints on the score
+itself are in [`../docs/relic-spec.md`](../docs/relic-spec.md) section 0.
+
+- `resolved_wins` and `resolved_losses` are both `u32`, and a loss subtracts
+  exactly the reputation a win adds. `ListingResolved` carries both counts, so
+  an indexer gets the losses without a second fetch.
+- A `Listing` is never closed. Withdrawing sets `Withdrawn`.
+- A `Stall` is never deallocated. `close_stall` stamps `closed_at` and returns
+  the bond, but the PDA is derived from the owner -- deallocating it would let a
+  losing record be reset by reopening at the same address.
+- `slashed` and `slashed_amount` are permanent.
+- `uri` is the one field that may change after `open_stall`, and `set_stall_uri`
+  reaches no counter. `StallUriUpdated` carries the old value next to the new
+  one, so a repoint is visible in the log rather than silent.
+
