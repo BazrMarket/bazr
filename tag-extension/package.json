@@ -1,0 +1,19 @@
+{
+  "name": "@bazr/tag-extension",
+  "private": true,
+  "version": "0.1.0",
+  "description": "BAZR Tag -- Chrome extension (MV3) that overlays a flea-market price tag with relic survival signals on Solana mint addresses.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:dev": "node scripts/build.mjs --dev",
+    "test": "node --test 'test/**/*.test.js'",
+    "smoke": "node scripts/smoke-api.mjs",
+    "icons": "python3 scripts/make-icons.py",
+    "gate": "bash scripts/gate-honesty.sh"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "engines": { "node": ">=20" }
+}
