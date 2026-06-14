@@ -56,3 +56,14 @@ itself are in [`../docs/relic-spec.md`](../docs/relic-spec.md) section 0.
   reaches no counter. `StallUriUpdated` carries the old value next to the new
   one, so a repoint is visible in the log rather than silent.
 
+## Events
+
+`MarketInitialized` `StallOpened` `RelicListed` `ListingResolved`
+`ListingWithdrawn` `StallClosed` `StallSlashed` `StallUriUpdated`
+`CrateCreated` `CrateRebalanced` `CrateFrozen`
+
+An event has no `reserved` tail, so adding a field to one breaks decoding of
+past logs. To carry new data, emit a **new event type** (the discriminator is
+then the version) and have the indexer treat an unknown discriminator from this
+program as an error rather than skipping it.
+
