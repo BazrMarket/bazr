@@ -1,0 +1,73 @@
+{
+  "manifest_version": 3,
+  "name": "BAZR Tag",
+  "version": "0.1.0",
+  "description": "Overlay a flea-market price tag on Solana mint addresses: relic survival signals, five axes, and honest risk labels.",
+  "minimum_chrome_version": "110",
+
+  "permissions": ["storage", "alarms"],
+
+  "host_permissions": [
+    "http://localhost:8030/*",
+    "https://api.bazr.market/*"
+  ],
+
+  "optional_host_permissions": ["https://*/*"],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://dexscreener.com/*",
+        "https://*.dexscreener.com/*",
+        "https://birdeye.so/*",
+        "https://*.birdeye.so/*",
+        "https://solscan.io/*",
+        "https://*.solscan.io/*",
+        "https://x.com/*",
+        "https://*.x.com/*",
+        "https://twitter.com/*",
+        "https://*.twitter.com/*",
+        "https://pump.fun/*",
+        "https://*.pump.fun/*",
+        "https://jup.ag/*",
+        "https://*.jup.ag/*",
+        "https://gmgn.ai/*",
+        "https://*.gmgn.ai/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "BAZR Tag",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
