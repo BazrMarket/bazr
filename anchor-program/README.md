@@ -67,3 +67,17 @@ past logs. To carry new data, emit a **new event type** (the discriminator is
 then the version) and have the indexer treat an unknown discriminator from this
 program as an error rather than skipping it.
 
+## Build and test
+
+```bash
+yarn install                 # test runner and TypeScript client dependencies
+anchor build                 # -> target/deploy/bazr_market.so, target/idl/bazr_market.json
+anchor test --provider.cluster localnet
+```
+
+`anchor build` requires the Anchor toolchain -- `anchor-cli` 0.31.1 and the Solana
+platform tools it drives. There is no vendored fallback in this repository; without that
+toolchain the build does not run at all. `anchor test` starts a local validator and is
+meant for localnet only, so pass `--provider.cluster localnet` explicitly rather than
+inheriting whatever cluster the machine's `solana config` currently points at.
+
