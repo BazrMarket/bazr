@@ -610,3 +610,22 @@ always has some string to show.
 
 ---
 
+## 12. Edge cases implementations must handle
+
+| # | Case | Handling |
+| --- | --- | --- |
+| 1 | Liquidity split across several pools | Sum `quote_usd` over **all** discovered pools. Reading one pool produces a false-thin result. |
+| 2 | Reserve snapshots move between reads | Read at one slot and record `last_indexed_slot`. Re-read when two consecutive reads disagree. |
+| 3 | No pool found | Confirmed 0 if a migration record exists, otherwise `unknown` (section 3). |
+| 4 | Token-2022 LP (PumpSwap) versus classic LP (Raydium) | Branch the burn determination by path. PumpSwap uses `lp_supply` plus the migration record; Raydium uses the supply/reserve formula. |
+| 5 | No CEX label list available | Proceed and set `cex_list_missing = true`. Small effect in this domain, but not hidden. |
+| 6 | Creator misattribution | Score the dev axis from authority fields only and set `creator_resolved = false` (section 4). |
+| 7 | Wash trading manufacturing a floor | The `traders_d >= 3` gate in `active(d)` (section 5). Raises the cost, does not eliminate the attack. |
+| 8 | Virtual reserves mistaken for liquidity | Use the **actual balance** of the quote vault. Virtual reserves do not migrate on-chain. |
+| 9 | SOL/USD price unavailable | `lp_residual` becomes `unknown`. Never substitute an estimated price. |
+| 10 | Thousands of holders, expensive pagination | Cache at the service layer. Only `?refresh=true` bypasses the cache. |
+| 11 | Folding a missing axis to 0 | Prohibited. Keep `unknown` and re-normalise (section 8). |
+| 12 | Presenting the score as a forecast | The `disclaimer` field is mandatory and no string may imply a future outcome or probability (section 0). |
+
+---
+
