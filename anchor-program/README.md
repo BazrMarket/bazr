@@ -81,3 +81,44 @@ toolchain the build does not run at all. `anchor test` starts a local validator 
 meant for localnet only, so pass `--provider.cluster localnet` explicitly rather than
 inheriting whatever cluster the machine's `solana config` currently points at.
 
+## Devnet
+
+The program keypair is not committed, so `anchor build` in a fresh clone mints a new one
+and a deploy made from it lands at a **different** address than the one listed below. The
+address below is the deployment this repository's authors made.
+
+```bash
+anchor build
+
+# Deploy. The keypair is yours to supply; this repository contains none.
+solana program deploy target/deploy/bazr_market.so \
+  --program-id target/deploy/bazr_market-keypair.json \
+  --url https://api.devnet.solana.com \
+  --keypair /path/to/your-deployer.json
+
+# One full cycle as real transactions, then read the accounts back.
+ANCHOR_PROVIDER_URL=https://api.devnet.solana.com \
+ANCHOR_WALLET=/path/to/your-deployer.json \
+npx ts-node scripts/devnet-cycle.ts
+
+# Read-only. Re-fetches the accounts the cycle wrote and sends nothing.
+ANCHOR_PROVIDER_URL=https://api.devnet.solana.com \
+ANCHOR_WALLET=/path/to/your-deployer.json \
+npx ts-node scripts/verify-devnet.ts
+```
+
+| | |
+|---|---|
+| Program ID | `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` |
+| On-chain IDL | `JAMv36dzMFcKsWEjcid2Q11n9Rdk85AKMwz3H98CpeSt` (ten instructions -- one behind this source) |
+| Market PDA (devnet) | `Axy4um2WmvEsWLTNqWJabQu8GTX1AcRPrNLHNekPSFNj` |
+| Devnet test bond mint | `F3wuUjqaXVByoaV5vryqgziGxqbrHxYNw3P2wckrsS7Q` (Token-2022) |
+
+Every address in that table is on devnet; append `?cluster=devnet` when opening any of
+them in an explorer. The bond mint is a throwaway devnet test token. It has no value, and
+nothing about it should be read as a launch.
+
+Mainnet is not deployed and must not be prepared. It needs explicit user
+approval **and** a launched token CA, because the market config stores the bond
+mint -- initialising it before the CA exists means redeploying to fix it.
+
