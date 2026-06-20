@@ -629,3 +629,36 @@ always has some string to show.
 
 ---
 
+## 13. Known limitations
+
+Stated here in one place rather than scattered, because a scoring system that hides its
+error modes is not auditable.
+
+- **False positives and false negatives are both possible on every heuristic axis.**
+  Creator attribution, insider clustering and locker detection are heuristics. They
+  misfire. Where a bias direction was chosen, it favours understating safety rather than
+  overstating it - an unrecognised locker is treated as `unlocked`, an undiscovered pool
+  simply lowers measured depth.
+- **There are windows we cannot observe.** Swap history depends on an indexer that can lag
+  or gap. Holder history depends on prior snapshots, so a token seen for the first time has
+  no `holder_prev` and its `trend` term contributes 0. These conditions produce `unknown`
+  or a narrowed window, never a silently invented value.
+- **The social axis is manipulable.** Wallet creation is cheap; both `new_holders` and
+  `unique_traders` can be inflated deliberately. External social data adds bot exposure on
+  top of that. This is why the axis is capped at weight 0.10 and any external source is
+  capped at 0.3 within the axis.
+- **The trading-floor gate is a speed bump, not a wall.** Three distinct wallets defeat
+  two-wallet wash trading. They do not defeat an actor running six.
+- **Low coverage degrades to `unclear`, by design.** If `lp_residual` cannot be read at
+  all, or if observable axes carry less than half the total weight, the verdict is
+  `unclear` regardless of how good the remaining axes look. Expect this outcome for
+  thinly indexed tokens. It is the specification working, not failing.
+- **The score is not calibrated against outcomes.** No axis is fitted to future price or
+  future trading. Nothing in this document should be read as an estimate of what a token
+  will do next.
+- **Thresholds are domain-specific and hand-set.** The values here target graduated,
+  largely abandoned meme tokens. Applied to actively traded assets they produce saturated,
+  uninformative output.
+
+---
+
