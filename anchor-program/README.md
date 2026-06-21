@@ -122,3 +122,12 @@ Mainnet is not deployed and must not be prepared. It needs explicit user
 approval **and** a launched token CA, because the market config stores the bond
 mint -- initialising it before the CA exists means redeploying to fix it.
 
+## Signing material
+
+The deploy keypair lives outside this repository and is never committed. The `.gitignore`
+in this directory blocks `.keys/`, `.deploy/`, `id.json`, `*-deploy.json`,
+`*-deployer.json` and `*-keypair.json` so that a stray copy cannot be staged by accident.
+
+Point each command at your keypair explicitly -- `--keypair` for `solana`,
+`--provider.wallet` for `anchor`, `ANCHOR_WALLET` for the scripts in `scripts/` -- instead
+of changing the global `solana config`, which every project on the same machine shares.
