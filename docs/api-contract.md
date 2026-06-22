@@ -382,3 +382,11 @@ A client implementing this contract is expected to:
 The reference implementation of all six is the TypeScript SDK in
 [BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-sdk).
 
+## Changing this contract
+
+This file is the source of truth for the wire format. A change lands here
+first, then in the SDK's `src/schemas.ts` in
+[bazr-sdk](https://github.com/BazrMarket/bazr-sdk), then in the clients.
+Adding an optional field is backward compatible. Renaming a field, removing
+one, or adding a value to `Verdict` or `AxisKey` is not, and is treated as a
+breaking change to every client at once.
