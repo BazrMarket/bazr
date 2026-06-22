@@ -270,3 +270,25 @@ expandable evidence. Merging them is what turns an observation into an accusatio
 
 ---
 
+## 11. Sources
+
+Authorities:
+[Solana set-authority](https://solana.com/docs/tokens/basics/set-authority),
+[Exploring token authorities](https://www.helius.dev/docs/orb/explore-authorities),
+[pump.fun token safety checklist](https://defade.org/blog/pump-fun-token-safety-checklist)
+
+LP burn and locking:
+[Raydium pool burn percentage](https://docs.shyft.to/solana-indexers/case-studies/raydium/get-pool-burn-percentage),
+[PumpSwap liquidity docs](https://deepwiki.com/pump-fun/pump-public-docs/4.4-liquidity-management),
+[Token locks on Solana](https://streamflow.finance/blog/token-locks-on-solana),
+[How to check liquidity locks](https://openliquid.io/blog/how-to-check-liquidity-locks/)
+
+Bundling, snipers and creator wallets:
+[What is bundle sniping on Solana](https://defade.org/blog/what-is-bundle-sniping-solana),
+[Using a Solana bundle checker](https://bingx.com/en/learn/article/how-to-use-a-solana-bundle-checker-for-safe-token-buys),
+[Trench Bot](https://trench.bot/),
+[Exit liquidity machines](https://pineanalytics.substack.com/p/exit-liquidity-machines)
+
+Holder concentration and exclusions:
+[Frontiers in Blockchain, 52-protocol study](https://www.frontiersin.org/journals/blockchain/articles/10.3389/fbloc.2026.1853465/full),
+[Token holder concentration analysis](https://www.veritasprotocol.com/blog/token-holder-concentration-analysis-metrics-and-limits)
