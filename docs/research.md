@@ -414,3 +414,22 @@ This is where LP state and liquidity depth actually come from.
 
 ---
 
+## 8. Unverified items, in full
+
+Everything labelled `[unverified]` above, collected in one place. This section
+is the point of the document: it states what could not be confirmed, so that no
+reader has to guess which claims are load bearing.
+
+| # | Item | State | How the specification handles it |
+|---|---|---|---|
+| 1 | Quantitative survival curve for trading N days after graduation | `[unverified]`; the qualitative claim is consistent across sources | Nothing hard-coded. Decided per token from measured `floor_shape` |
+| 2 | Body figures of the memecoin fragility paper (2512.00377) | `[unverified]`; PDF extraction failed | Only the abstract-level framing of volatility, whales and sentiment is used. No figure from it is cited |
+| 3 | A free canonical source of CEX wallet labels | `[unverified]` | CEX exclusion runs off an external or manual list. The residual upward bias is stated. Domain impact is small (`[estimate]`) |
+| 4 | Complete program IDs for lockers other than Streamflow | `[unverified]` | Only the known locker set is used. An unknown locker is a false negative and lowers label confidence |
+| 5 | A standard method that identifies a creator wallet with certainty | `[unverified]` | A combination of heuristics. Creator labels are marked as observations with their confidence exposed |
+| 6 | Credit cost per `getTokenAccounts` call | `[unverified]` | Caching is mandatory; the unit cost is measured during implementation |
+| 7 | Exact field names of Raydium (non-pump) pool accounts | `[unverified, partial]` | PumpSwap is settled. Raydium follows the Shyft formula (`lpReserve` and `supply`) and is to be checked against the IDL during implementation |
+
+Every row above is absorbed either as an explicit unknown state or as reduced
+label confidence. None of them is presented anywhere in the specification as an
+established fact.
