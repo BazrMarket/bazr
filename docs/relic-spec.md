@@ -662,3 +662,40 @@ error modes is not auditable.
 
 ---
 
+## 14. Sources
+
+Graduation, migration and LP burn:
+[pump.fun bonding curve](https://pump.fun/docs/bonding-curve),
+[Bitquery pump to pumpswap](https://docs.bitquery.io/docs/blockchain/Solana/Pumpfun/pump-fun-to-pump-swap/),
+[PumpSwap AMM mechanism](https://deepwiki.com/pump-fun/pump-public-docs/4.1-pumpswap-amm-mechanism),
+[PumpSwap liquidity management](https://deepwiki.com/pump-fun/pump-public-docs/4.4-liquidity-management)
+
+Graduation rates and the effect of social presence:
+[arXiv 2607.02823](https://arxiv.org/html/2607.02823),
+[SSRN 6915560](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6915560)
+
+Post-graduation failure:
+[Five reasons tokens die after graduation](https://medium.com/@jump_bit/5-reasons-your-pump-fun-token-died-after-graduation-and-how-to-prevent-it-c04a3a1a8f9d),
+[The 30-minute post-graduation playbook](https://medium.com/@jump_bit/the-30-minute-post-graduation-playbook-keep-your-pump-fun-token-alive-on-pumpswap-59c71e08ebb6)
+
+Holder concentration and its pitfalls:
+[Token holder concentration analysis](https://www.veritasprotocol.com/blog/token-holder-concentration-analysis-metrics-and-limits),
+[Frontiers in Blockchain, 52-protocol study](https://www.frontiersin.org/journals/blockchain/articles/10.3389/fbloc.2026.1853465/full),
+[Wealth distribution in token economies](https://bitquery.io/blog/wealth-distribution-in-token-economy),
+[Checking a Solana token for rug pulls](https://www.barryguard.com/blog/how-to-check-solana-token-rug-pull)
+
+LP burn and locking:
+[Raydium pool burn percentage](https://docs.shyft.to/solana-indexers/case-studies/raydium/get-pool-burn-percentage),
+[Token locks on Solana](https://streamflow.finance/blog/token-locks-on-solana)
+
+Authorities:
+[Solana set-authority](https://solana.com/docs/tokens/basics/set-authority),
+[Exploring token authorities](https://www.helius.dev/docs/orb/explore-authorities)
+
+Holder enumeration:
+[How to get token holders on Solana](https://www.helius.dev/blog/how-to-get-token-holders-on-solana),
+[getTokenAccounts](https://www.helius.dev/docs/api-reference/das/gettokenaccounts)
+
+Routing and quotes:
+[Jupiter get-quote](https://developers.jup.ag/docs/swap/get-quote),
+[Jupiter rate limits](https://developers.jup.ag/docs/portal/rate-limits)
