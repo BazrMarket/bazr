@@ -222,3 +222,8 @@ itself worth raising.
 **Published artifacts.** Do not trust a package you cannot trace back to a tagged commit
 in this repository. A version number is not provenance.
 
+## Reporting
+
+Vulnerability reports, coordinated disclosure timelines and contact details are in
+[SECURITY.md](../SECURITY.md) at the repository root. Please do not open a public issue
+for a security problem before that process has run.
