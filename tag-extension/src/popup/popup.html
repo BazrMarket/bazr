@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BAZR Tag</title>
+  <!-- Relative to this folder. The build drops popup.css and popup.js right next to this file. -->
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="bz-shell">
+
+    <header class="bz-top">
+      <div class="bz-brandRow">
+        <span class="bz-brand">BAZR Tag</span>
+        <span class="bz-version" id="version"></span>
+      </div>
+      <p class="bz-tagline">Read the price tag on a Solana mint: five survival axes and the labels behind them.</p>
+    </header>
+
+    <main class="bz-body">
+
+      <form class="bz-lookup" id="lookup-form" autocomplete="off" novalidate>
+        <label class="bz-label" for="mint-input">Mint address</label>
+        <div class="bz-row">
+          <input class="bz-input" id="mint-input" name="mint" type="text"
+                 spellcheck="false" autocapitalize="off" autocorrect="off"
+                 placeholder="Paste a Solana mint address" aria-describedby="notice">
+          <button class="bz-btn bz-btn--primary" id="read-btn" type="submit">Read tag</button>
+        </div>
+      </form>
+
+      <p class="bz-notice" id="notice" role="status" aria-live="polite" hidden></p>
+
+      <div class="bz-tagSlot" id="tag-slot">
+        <p class="bz-hint" id="tag-hint">Paste a mint address above, or pick one from recent lookups.</p>
+      </div>
+
+      <div class="bz-row bz-row--end">
+        <button class="bz-btn bz-btn--ghost" id="refresh-btn" type="button" disabled
+                title="Ask the API again for the last mint, ignoring the extension cache.">Refresh</button>
+      </div>
+
+      <section class="bz-recent">
+        <h2 class="bz-h2">Recent lookups</h2>
+        <ul class="bz-recentList" id="recent-list"></ul>
+      </section>
+
+    </main>
+
+    <footer class="bz-foot">
+      <div class="bz-status">
+        <span class="bz-dot" id="status-dot" data-state="checking"></span>
+        <span class="bz-statusText" id="status-text">Checking the API...</span>
+      </div>
+      <button class="bz-link" id="settings-btn" type="button">Settings</button>
+    </footer>
+
+  </div>
+
+  <!-- MV3 CSP: no inline script. Only esbuild's IIFE bundle is referenced (not type="module"). -->
+  <script src="popup.js"></script>
+</body>
+</html>
