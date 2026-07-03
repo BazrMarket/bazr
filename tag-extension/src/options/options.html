@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BAZR Tag settings</title>
+  <!-- Relative to this folder. The build drops options.css and options.js right next to this file. -->
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="bz-page">
+
+    <header class="bz-top">
+      <div class="bz-topInner">
+        <div class="bz-brandRow">
+          <span class="bz-brand">BAZR Tag</span>
+          <span class="bz-crumb">settings</span>
+          <span class="bz-version" id="version"></span>
+        </div>
+        <p class="bz-tagline">
+          Where the price tag comes from, when it is drawn, and what is kept on this machine.
+        </p>
+      </div>
+    </header>
+
+    <main class="bz-main">
+
+      <p class="bz-notice" id="notice" role="status" aria-live="polite" hidden></p>
+
+      <!-- ------------------------------------------------------------------ -->
+      <section class="bz-card" aria-labelledby="api-h">
+        <h2 class="bz-h2" id="api-h">API base</h2>
+        <p class="bz-help">
+          Every lookup goes to this server. The extension ships no API key and never signs a request
+          &mdash; anyone can unzip an extension, so a key inside one is a published key.
+        </p>
+
+        <form class="bz-form" id="api-form" autocomplete="off" novalidate>
+          <label class="bz-label" for="api-base">Base URL</label>
+          <div class="bz-row">
+            <input class="bz-input" id="api-base" name="apiBase" type="text"
+                   spellcheck="false" autocapitalize="off" autocorrect="off"
+                   placeholder="https://api.bazr.market" aria-describedby="api-hint">
+            <button class="bz-btn bz-btn--primary" id="api-save" type="submit">Save</button>
+          </div>
+          <p class="bz-hint" id="api-hint">
+            http or https, no trailing slash. A host outside the two presets needs your permission
+            before the extension may reach it; Chrome will ask when you save.
+          </p>
+        </form>
+
+        <div class="bz-row bz-row--wrap">
+          <button class="bz-btn bz-btn--ghost" id="preset-prod" type="button">Use production</button>
+          <button class="bz-btn bz-btn--ghost" id="preset-dev" type="button">Use local dev</button>
+          <button class="bz-btn bz-btn--ghost" id="api-test" type="button">Test connection</button>
+        </div>
+
+        <div class="bz-statusLine">
+          <span class="bz-dot" id="health-dot" data-state="checking"></span>
+          <span class="bz-statusText" id="health-text">Checking the API...</span>
+        </div>
+      </section>
+
+      <!-- ------------------------------------------------------------------ -->
+      <section class="bz-card" aria-labelledby="overlay-h">
+        <h2 class="bz-h2" id="overlay-h">Automatic overlay</h2>
+        <p class="bz-help">
+          With this off, nothing is drawn on any page and no address is sent anywhere. The popup
+          still works: you paste an address and only that one is looked up.
+        </p>
+
+        <label class="bz-switch" for="auto-overlay">
+          <input class="bz-switchInput" id="auto-overlay" type="checkbox">
+          <span class="bz-switchTrack" aria-hidden="true"><span class="bz-switchKnob"></span></span>
+          <span class="bz-switchText">
+            <span class="bz-switchTitle">Tag mint addresses automatically</span>
+            <span class="bz-switchNote" id="auto-overlay-note">Scans the pages allowed below.</span>
+          </span>
+        </label>
+      </section>
+
+      <!-- ------------------------------------------------------------------ -->
+      <section class="bz-card" aria-labelledby="sites-h">
+        <h2 class="bz-h2" id="sites-h">Allowed sites</h2>
+        <p class="bz-help">
+          BAZR Tag adds a price tag next to addresses these sites already show. It does not copy
+          what they do, and it reads nothing on a site switched off here.
+        </p>
+
+        <ul class="bz-siteList" id="site-list"></ul>
+
+        <div class="bz-row bz-row--wrap">
+          <button class="bz-btn bz-btn--ghost" id="sites-all" type="button">Allow all</button>
+          <button class="bz-btn bz-btn--ghost" id="sites-none" type="button">Allow none</button>
+        </div>
+      </section>
+
+      <!-- ------------------------------------------------------------------ -->
+      <section class="bz-card" aria-labelledby="cache-h">
+        <h2 class="bz-h2" id="cache-h">Local cache</h2>
+        <p class="bz-help">
+          Scored mints are kept for 10 minutes, and addresses the API says are not mints for 24 hours,
+          so scrolling a timeline does not spend your rate limit on the same string over and over.
+          Everything lives in this browser profile only.
+        </p>
+
+        <dl class="bz-stats">
+          <div class="bz-stat">
+            <dt class="bz-statLabel">Scored mints</dt>
+            <dd class="bz-statValue" id="cache-relic">--</dd>
+          </div>
+          <div class="bz-stat">
+            <dt class="bz-statLabel">Known non-mints</dt>
+            <dd class="bz-statValue" id="cache-negative">--</dd>
+          </div>
+        </dl>
+
+        <div class="bz-row bz-row--wrap">
+          <button class="bz-btn bz-btn--danger" id="cache-clear" type="button">Clear cache</button>
+          <button class="bz-btn bz-btn--ghost" id="cache-refresh" type="button">Recount</button>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="bz-foot">
+      <p class="bz-disclaimer" id="disclaimer"></p>
+      <p class="bz-footNote">
+        Settings are stored with chrome.storage.local in this browser profile. Nothing is synced.
+      </p>
+    </footer>
+
+  </div>
+
+  <!-- MV3 CSP: no inline script. Only esbuild's IIFE bundle is referenced (not type="module"). -->
+  <script src="options.js"></script>
+</body>
+</html>
