@@ -1,0 +1,101 @@
+{
+  "_source": "The GET /relic/{mint} example response from docs/api-contract.md. That example elides axes as [ /* Axis[] */ ], so the five axes are copied verbatim from the worked example in section 10 of docs/relic-spec.md, and the top-level score is set to that example's 50 so that Sigma contribution == score holds. Every other field is exactly as api-contract.md has it.",
+  "mint": "So1111111111111111111111111111111111111111",
+  "symbol": "EXAMPLE",
+  "name": "Example",
+  "score": 50,
+  "verdict": "unclear",
+  "axes": [
+    {
+      "key": "holder_dispersion",
+      "label": "Holder spread",
+      "blurb": "How widely the real holders are spread, after removing pool, exchange, burn and insider wallets.",
+      "score": 62,
+      "weight": 0.2,
+      "contribution": 12.4,
+      "status": "ok",
+      "detail": { "top1": 0.22, "top10": 0.45, "n_eff": 180, "cex_list_missing": false }
+    },
+    {
+      "key": "lp_residual",
+      "label": "Liquidity left",
+      "blurb": "Real quote-side liquidity still in the pool(s), and whether that liquidity is burned, locked, or still pullable.",
+      "score": 57,
+      "weight": 0.3,
+      "contribution": 17.1,
+      "status": "ok",
+      "detail": {
+        "quote_usd": 4200,
+        "graduated": true,
+        "pools": [{ "amm": "pumpswap", "quote_usd": 4200, "lp_state": "burned", "burn_pct": 100 }]
+      }
+    },
+    {
+      "key": "dev_wallet_state",
+      "label": "Creator overhang",
+      "blurb": "Residual control the creator still holds: remaining supply, recent large moves, and whether mint or freeze authority is still live.",
+      "score": 97,
+      "weight": 0.15,
+      "contribution": 14.55,
+      "status": "ok",
+      "detail": {
+        "mint_live": false,
+        "freeze_live": false,
+        "creator_resolved": true,
+        "dev_pct": 0.06,
+        "dev_recent_out": 0
+      }
+    },
+    {
+      "key": "floor_shape",
+      "label": "Trading floor",
+      "blurb": "How consistently the token still trades day over day. This measures persistence of fills, not price.",
+      "score": 18,
+      "weight": 0.25,
+      "contribution": 4.5,
+      "status": "ok",
+      "detail": { "active_days": 9, "window_days": 30, "since_last": 3, "fill_threshold": 5, "trader_threshold": 3 }
+    },
+    {
+      "key": "social_afterglow",
+      "label": "Afterglow",
+      "blurb": "On-chain traces of lingering attention: new first-time holders, breadth of distinct active wallets, and holder-count trend.",
+      "score": 19,
+      "weight": 0.1,
+      "contribution": 1.9,
+      "status": "ok",
+      "detail": { "new_holders": 12, "unique_traders": 40, "trend": -0.05, "on_chain_only": true }
+    }
+  ],
+  "tags": [
+    {
+      "key": "lp-burned",
+      "label": "LP burned",
+      "severity": "info",
+      "observed": true,
+      "confidence": "high",
+      "evidence": { "per_pool": [{ "amm": "pumpswap", "burn_pct": 100, "method": "migrate" }] }
+    },
+    {
+      "key": "dev-holds-N%",
+      "label": "Creator holds ~6%",
+      "severity": "caution",
+      "observed": true,
+      "confidence": "medium",
+      "evidence": { "attribution": "coin_creator", "dev_pct": 0.06 }
+    },
+    {
+      "key": "rug-history",
+      "label": "Creator linked to dead tokens",
+      "severity": "alert",
+      "observed": true,
+      "confidence": "low",
+      "evidence": { "linked_mints": [{ "mint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", "outcome": "liquidity went to ~0" }] }
+    }
+  ],
+  "graduated_at": "2025-11-02T10:11:12Z",
+  "scored_at": "2026-03-11T07:00:00Z",
+  "cache": { "hit": true, "age_s": 120 },
+  "sources": [{ "name": "helius", "endpoint": "getTokenAccounts", "fetched_at": "2026-03-11T07:00:00Z" }],
+  "disclaimer": "Survival-signal summary, not a prediction of price or revival."
+}

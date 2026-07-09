@@ -1,0 +1,76 @@
+{
+  "_source": "docs/relic-spec.md section 9 (1), the coverage gate: if lp_residual cannot be read then verdict=unclear / reason='no liquidity read'. The two missing axes arrive as status='unknown' with score=null (not a score of 0). Folding those axes into 0 is the most expensive bug this extension can have, so it is pinned down as a fixture.",
+  "mint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+  "symbol": "NOREAD",
+  "name": "Unreadable pools",
+  "score": 61,
+  "verdict": "unclear",
+  "reason": "no liquidity read",
+  "axes": [
+    {
+      "key": "holder_dispersion",
+      "label": "Holder spread",
+      "blurb": "How widely the real holders are spread, after removing pool, exchange, burn and insider wallets.",
+      "score": 71,
+      "weight": 0.2,
+      "contribution": 20.28,
+      "status": "ok",
+      "detail": { "top1": 0.12, "top10": 0.38, "n_eff": 640 }
+    },
+    {
+      "key": "lp_residual",
+      "label": "Liquidity left",
+      "blurb": "Real quote-side liquidity still in the pool(s), and whether that liquidity is burned, locked, or still pullable.",
+      "score": null,
+      "weight": 0.3,
+      "contribution": 0,
+      "status": "unknown",
+      "detail": { "pools": [], "graduated": null, "quote_price_usd_read": false }
+    },
+    {
+      "key": "dev_wallet_state",
+      "label": "Creator overhang",
+      "blurb": "Residual control the creator still holds: remaining supply, recent large moves, and whether mint or freeze authority is still live.",
+      "score": 100,
+      "weight": 0.15,
+      "contribution": 21.43,
+      "status": "ok",
+      "detail": { "mint_live": false, "freeze_live": false, "creator_resolved": false }
+    },
+    {
+      "key": "floor_shape",
+      "label": "Trading floor",
+      "blurb": "How consistently the token still trades day over day. This measures persistence of fills, not price.",
+      "score": 27,
+      "weight": 0.25,
+      "contribution": 9.64,
+      "status": "ok",
+      "detail": { "active_days": 11, "window_days": 30, "since_last": 5 }
+    },
+    {
+      "key": "social_afterglow",
+      "label": "Afterglow",
+      "blurb": "On-chain traces of lingering attention: new first-time holders, breadth of distinct active wallets, and holder-count trend.",
+      "score": null,
+      "weight": 0.1,
+      "contribution": 0,
+      "status": "unknown",
+      "detail": { "on_chain_only": true, "holder_prev": null }
+    }
+  ],
+  "tags": [
+    {
+      "key": "sniper-cluster",
+      "label": "Sniper cluster",
+      "severity": "caution",
+      "observed": true,
+      "confidence": "low",
+      "evidence": { "cluster_size": 4, "first_slots": 5, "shared_funder": null }
+    }
+  ],
+  "graduated_at": null,
+  "scored_at": "2026-03-11T07:30:00Z",
+  "cache": { "hit": false, "age_s": 0 },
+  "sources": [{ "name": "helius", "endpoint": "getAsset", "fetched_at": "2026-03-11T07:30:00Z" }],
+  "disclaimer": "Survival-signal summary, not a prediction of price or revival."
+}

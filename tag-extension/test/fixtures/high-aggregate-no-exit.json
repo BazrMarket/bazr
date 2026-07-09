@@ -1,0 +1,80 @@
+{
+  "_source": "docs/relic-spec.md section 9 (3), band assignment: relic>=60 with lp_residual<40 is not dormant but unclear / reason='high aggregate but cannot exit'. Read the aggregate alone and the response looks fine, so leaving the reason undrawn means the user reads it as 'nice score'. Hence a fixture of its own to pin it down.",
+  "mint": "FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb",
+  "symbol": "TRAP",
+  "name": "High score, no exit",
+  "score": 68,
+  "verdict": "unclear",
+  "reason": "high aggregate but cannot exit",
+  "axes": [
+    {
+      "key": "holder_dispersion",
+      "label": "Holder spread",
+      "blurb": "How widely the real holders are spread, after removing pool, exchange, burn and insider wallets.",
+      "score": 84,
+      "weight": 0.2,
+      "contribution": 16.8,
+      "status": "ok",
+      "detail": { "top1": 0.05, "top10": 0.26, "n_eff": 1420 }
+    },
+    {
+      "key": "lp_residual",
+      "label": "Liquidity left",
+      "blurb": "Real quote-side liquidity still in the pool(s), and whether that liquidity is burned, locked, or still pullable.",
+      "score": 22,
+      "weight": 0.3,
+      "contribution": 6.6,
+      "status": "ok",
+      "detail": {
+        "quote_usd": 720,
+        "graduated": true,
+        "pools": [{ "amm": "pumpswap", "quote_usd": 720, "lp_state": "burned", "burn_pct": 100 }]
+      }
+    },
+    {
+      "key": "dev_wallet_state",
+      "label": "Creator overhang",
+      "blurb": "Residual control the creator still holds: remaining supply, recent large moves, and whether mint or freeze authority is still live.",
+      "score": 100,
+      "weight": 0.15,
+      "contribution": 15,
+      "status": "ok",
+      "detail": { "mint_live": false, "freeze_live": false, "creator_resolved": true, "dev_pct": 0 }
+    },
+    {
+      "key": "floor_shape",
+      "label": "Trading floor",
+      "blurb": "How consistently the token still trades day over day. This measures persistence of fills, not price.",
+      "score": 88,
+      "weight": 0.25,
+      "contribution": 22,
+      "status": "ok",
+      "detail": { "active_days": 27, "window_days": 30, "since_last": 1 }
+    },
+    {
+      "key": "social_afterglow",
+      "label": "Afterglow",
+      "blurb": "On-chain traces of lingering attention: new first-time holders, breadth of distinct active wallets, and holder-count trend.",
+      "score": 76,
+      "weight": 0.1,
+      "contribution": 7.6,
+      "status": "ok",
+      "detail": { "new_holders": 61, "unique_traders": 130, "trend": 0.08, "on_chain_only": true }
+    }
+  ],
+  "tags": [
+    {
+      "key": "lp-thin",
+      "label": "Thin liquidity",
+      "severity": "caution",
+      "observed": true,
+      "confidence": "high",
+      "evidence": { "quote_usd": 720, "pools": [{ "amm": "pumpswap", "quote_usd": 720 }] }
+    }
+  ],
+  "graduated_at": "2026-01-14T02:03:04Z",
+  "scored_at": "2026-03-11T08:00:00Z",
+  "cache": { "hit": false, "age_s": 0 },
+  "sources": [{ "name": "helius", "endpoint": "getTokenAccounts", "fetched_at": "2026-03-11T08:00:00Z" }],
+  "disclaimer": "Survival-signal summary, not a prediction of price or revival."
+}
