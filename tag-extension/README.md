@@ -45,3 +45,17 @@ The build writes `build/unpacked/` and `build/bazr-tag-<version>.zip`. Then, in 
 
 Chrome keeps warning about developer-mode extensions; updating means rebuilding and reloading.
 
+## Settings
+
+The options page opens in its own tab, from **Settings** in the popup or **Details -> Extension
+options** on `chrome://extensions`.
+
+- **API base** -- where every lookup goes. Two presets ship with it: the hosted service at
+  `https://api.bazr.market` (the default) and `http://localhost:8030` for a local one. Any other
+  host needs your permission, and Chrome asks for it when you save.
+- **Automatic overlay** -- switch it off and nothing is drawn on any page and no address is sent
+  anywhere. The popup still works on addresses you paste yourself.
+- **Allowed sites** -- one switch per supported site. A site switched off here is not read at all.
+- **Local cache** -- scored mints are kept for 10 minutes and confirmed non-mints for 24 hours,
+  with counters and a clear button. All of it stays in this browser profile.
+
