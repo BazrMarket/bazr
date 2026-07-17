@@ -26,3 +26,22 @@ it yourself and load it unpacked, as described below.
   not be seen" into "is bad" would render every token with a failed data lookup as dead.
 - Runs the same lookup from the toolbar popup for an address you paste, and keeps the last five.
 
+## Installing (load unpacked)
+
+Node 20 or newer.
+
+```bash
+git clone https://github.com/BazrMarket/bazr.git
+cd bazr/tag-extension
+npm install
+npm run build
+```
+
+The build writes `build/unpacked/` and `build/bazr-tag-<version>.zip`. Then, in Chrome:
+
+1. Open `chrome://extensions`.
+2. Turn on **Developer mode** (top right).
+3. Click **Load unpacked** and choose the `build/unpacked` folder.
+
+Chrome keeps warning about developer-mode extensions; updating means rebuilding and reloading.
+
