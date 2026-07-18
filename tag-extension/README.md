@@ -59,3 +59,23 @@ options** on `chrome://extensions`.
 - **Local cache** -- scored mints are kept for 10 minutes and confirmed non-mints for 24 hours,
   with counters and a clear button. All of it stays in this browser profile.
 
+## Building and testing
+
+| Command | What it does |
+|---|---|
+| `npm run build` | Production build: minified, no sourcemaps, plus the zip |
+| `npm run build:dev` | The same output unminified, with sourcemaps |
+| `npm test` | Unit tests over `test/**/*.test.js` with the Node test runner |
+| `npm run smoke -- --base <url>` | Calls a live API and checks its responses against the contract |
+| `npm run icons` | Redraws `public/icons/*.png` (needs Python 3 with Pillow) |
+| `npm run gate` | Scans the tree for hype vocabulary, printing `scanned` / `exempted` / `violations` / `verdict` |
+
+`npm run smoke` defaults to `http://localhost:8030`; `--base` points it elsewhere and `--mint` picks
+another address. It exits 2, not 0, when the API is unreachable -- not having looked and having found
+nothing wrong must not share an exit code.
+
+The honesty gate reads `src/`, `scripts/`, `test/`, `manifest.json` and this file. The negative
+tests under `test/` carry that vocabulary on purpose as fixtures, so they are counted under
+`exempted` and listed on stderr rather than silently skipped. An exemption that swallowed the whole
+tree would leave nothing scanned, and the gate treats that as a self-failure instead of a pass.
+
