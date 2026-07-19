@@ -1,0 +1,150 @@
+# CI for BazrMarket/bazr.
+#
+# Every step below was run locally against a clean checkout before it was added,
+# and every one of them passed. That rule is the whole design: a workflow that is
+# red for a reason nobody intends to fix teaches everyone to stop reading it, and
+# then it stops catching anything.
+#
+# What runs, and why it is worth running:
+#
+#   idl        The IDL at idl/bazr_market.json is a committed build artifact. A
+#              stale one keeps answering questions about a program that no longer
+#              looks like that, so this re-derives the program address, the
+#              instruction, account, event and error names from the Rust source
+#              and compares. Pure Node, no toolchain.
+#   extension  Unit tests, the honesty gate, and a production build of the
+#              Manifest V3 extension. The build validates the manifest against
+#              the files it actually produced, so a manifest referencing a file
+#              that is not in the bundle fails here rather than in Chrome.
+#   program    rustfmt in check mode, then `cargo check --all-targets --locked`
+#              over the Anchor program. This compiles the crate for the host and
+#              is what catches a program that no longer builds.
+#
+# What does NOT run, and why. These are omissions with reasons, not oversights:
+#
+#   `anchor build` / `anchor test`  Both need the Anchor toolchain: anchor-cli
+#       0.31.1 plus the Solana platform tools it drives, and `anchor test` also
+#       starts a local validator. That is a large install for every push, and it
+#       would still not verify the deployed program, since the deployed binary is
+#       bound by its upgrade authority rather than by this source. `cargo check`
+#       plus the IDL job covers what can honestly be checked here.
+#
+#   `cargo clippy -D warnings`  Anchor's derive macros expand to code that emits
+#       unexpected_cfgs warnings and one deprecated AccountInfo::realloc warning,
+#       and the program source cannot silence warnings it does not generate. With
+#       -D warnings this job is red on a clean checkout; without -D warnings it
+#       reports exactly what `cargo check` already reported. Neither form earns
+#       its runtime, so neither is here.
+#
+#   Any devnet or mainnet transaction  Sending one needs a funded keypair. This
+#       repository holds no key material and CI is given no secrets, which is the
+#       point. anchor-program/scripts/devnet-cycle.ts is run by hand, against a
+#       keypair the operator supplies.
+#
+#   `npm run smoke` in tag-extension/  It calls a live API. A failure would mean
+#       the hosted service was down, not that the pull request broke something.
+#
+# Node is pinned to 22 rather than to the 20 the extension's package.json
+# declares. Measured: on Node 20.19.5 `npm test` fails with "Could not find
+# .../test/**/*.test.js", because passing a glob to `node --test` needs Node 22.
+# Everything else in this repository runs on Node 20.
+#
+# Lockfiles differ by package, so the install command does too.
+# tag-extension/package-lock.json is committed, so the extension job installs
+# with `npm ci`: it resolves exactly the versions the lockfile names and fails
+# instead of quietly drifting, which is the whole reason to commit one. That
+# lockfile is also what actions/setup-node keys its npm cache on, through
+# cache-dependency-path -- the path is relative to the workspace root, not to
+# the job's working-directory, since that setting only applies to `run` steps.
+# anchor-program/ has no npm lockfile, so its TypeScript dependencies would need
+# `npm install`; no job here installs them, because `anchor test` is not run in
+# CI for the reasons given above.
+#
+# The Rust side has no cache. A cold `cargo check --locked` against an empty
+# CARGO_HOME takes about twenty seconds locally, which does not pay for the
+# complexity of a cache key.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  idl:
+    name: Committed IDL matches the program source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Compare idl/bazr_market.json against the Rust source
+        run: node .github/scripts/check-idl.mjs
+
+  extension:
+    name: Extension tests, honesty gate and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tag-extension
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: tag-extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Honesty gate
+        run: npm run gate
+
+      - name: Production build
+        run: npm run build
+
+  program:
+    name: Anchor program formatting and compilation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: anchor-program
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      # The ubuntu-latest image ships a stable Rust toolchain with rustfmt.
+      # Printing the versions means the log says what the check ran with,
+      # rather than leaving it to be inferred from whether it passed.
+      - name: Report the toolchain in use
+        run: |
+          rustc --version
+          cargo --version
+          cargo fmt --version
+
+      - name: Formatting
+        run: cargo fmt --all --check
+
+      - name: Compile
+        run: cargo check --all-targets --locked
