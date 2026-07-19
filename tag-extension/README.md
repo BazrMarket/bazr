@@ -79,3 +79,24 @@ tests under `test/` carry that vocabulary on purpose as fixtures, so they are co
 `exempted` and listed on stderr rather than silently skipped. An exemption that swallowed the whole
 tree would leave nothing scanned, and the gate treats that as a self-failure instead of a pass.
 
+## Permissions and privacy
+
+Taken from `manifest.json`, and nothing beyond it:
+
+- `storage` -- settings, cache and recent lookups in `chrome.storage.local`. Nothing is synced.
+- `alarms` -- a single 30-minute alarm that sweeps expired cache entries. An MV3 service worker is
+  shut down between events, so `setInterval` cannot survive to do this.
+- Host permissions are `https://api.bazr.market/*` and `http://localhost:8030/*` -- the only two
+  hosts the extension may call without asking.
+- `optional_host_permissions: https://*/*` is requested only if you point the API base somewhere
+  else, and only at the moment you save that setting.
+- Content scripts run at `document_idle` in the top frame only, on dexscreener.com, birdeye.so,
+  solscan.io, x.com, twitter.com, pump.fun, jup.ag and gmgn.ai, plus their subdomains.
+- Extension pages run under `script-src 'self'; object-src 'self'`, so no remote code is loaded.
+  The minimum supported Chrome version is 110.
+
+What leaves the browser is the mint-shaped strings found on those pages, sent to the API base you
+configured. There is no account, no sign-in and no telemetry. The extension never connects to a
+wallet, never talks to an RPC endpoint and signs nothing. It also ships no API key -- anyone can
+unzip an extension, so a key inside one is a published key.
+
