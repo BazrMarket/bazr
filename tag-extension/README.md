@@ -100,3 +100,13 @@ configured. There is no account, no sign-in and no telemetry. The extension neve
 wallet, never talks to an RPC endpoint and signs nothing. It also ships no API key -- anyone can
 unzip an extension, so a key inside one is a published key.
 
+## Limitations
+
+- Not on the Chrome Web Store, so there is no automatic update channel.
+- A score is a snapshot of one moment; every response carries `scored_at`, so a stale read shows.
+- Axes can come back `unknown`, and the score can be missing entirely, when the data cannot be read.
+- Detection is heuristic and gated on confirmation, so an address a page presents in an unusual
+  place may never receive a tag, and a layout change on a supported site can break the overlay.
+- The first lookup of an unscored mint can take tens of seconds, because that request reads the
+  chain. The client timeout is 30 seconds; later lookups come from cache.
+- The extension does not rank, recommend or price anything.
