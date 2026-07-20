@@ -48,3 +48,59 @@ Everything here is pre-1.0 and is developed on `main`. Security fixes land on
 
 ---
 
+## Reporting a vulnerability
+
+**Use GitHub Security Advisories. Do not open a public issue.**
+
+Report privately here:
+
+https://github.com/BazrMarket/bazr/security/advisories/new
+
+That form is the only reporting channel this project maintains. It stays private
+between you and the maintainers until an advisory is published, and it keeps the
+report attached to the repository rather than in somebody's inbox. No email
+address, chat handle or bounty platform is listed here on purpose: a contact that
+nobody watches is worse than no contact at all.
+
+If the advisory form is unavailable to you, open a public issue that says only "I
+have a security report and cannot use the advisory form", with no technical
+detail, and wait to be contacted.
+
+### What to include
+
+A report is actionable when someone else can reproduce it. Please include:
+
+- The affected component and the commit hash.
+- What an attacker gains, in one sentence.
+- Exact reproduction steps. For the program: an instruction sequence, the account
+  layout, and the cluster. For the extension: the page, the DOM shape, and the
+  browser version.
+- Any proof-of-concept, as a patch or a script.
+- Your assessment of severity, and whether you have disclosed it elsewhere.
+
+Please do not test against other people's wallets or funds. Use devnet, a local
+validator, or a wallet you own.
+
+### What to expect
+
+These are targets that the maintainers work to, not promises:
+
+| Stage | Target |
+|---|---|
+| Acknowledgement that the report arrived | 3 business days |
+| Initial assessment and severity triage | 7 calendar days |
+| Fix or documented mitigation for high severity | 30 calendar days |
+| Public advisory after a fix ships | Coordinated with the reporter |
+
+### Disclosure
+
+This project follows coordinated disclosure. The default embargo is 90 days from
+acknowledgement, shortened when a fix ships earlier and extended when a fix needs
+downstream coordination. Reporters are credited in the advisory under whatever
+name they choose, and may ask to stay anonymous.
+
+If something is already being exploited, say so in the first message. That
+changes the schedule.
+
+---
+
