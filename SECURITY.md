@@ -104,3 +104,52 @@ changes the schedule.
 
 ---
 
+## Scope
+
+### In scope
+
+- **`anchor-program/`** -- missing signer or owner checks, PDA seed collisions,
+  account substitution, mint or decimals confusion in a bond transfer, arithmetic
+  overflow or truncation in bond, reputation and slash accounting, authority
+  escalation, and anything that lets a stall owner withdraw or avoid a bond they
+  should not, or reset a losing record.
+- **`idl/bazr_market.json`** -- an IDL that does not describe the program it
+  claims to describe, in a way that would make a client build the wrong
+  instruction or decode an account incorrectly.
+- **`tag-extension/`** -- permission scope wider than the extension needs, content
+  script paths that can be driven by page-controlled input, any path that sends
+  browsing data somewhere other than the configured API base, and address
+  detection that can be arranged by an attacker to attach a tag to the wrong
+  address.
+- **Scoring correctness that changes a verdict** -- coverage accounting,
+  re-normalisation of unobserved axes, and verdict thresholds, as specified in
+  `docs/relic-spec.md`. See the section below.
+- **Supply chain** -- a dependency declared in this repository with a known
+  advisory, or a build script that fetches code at install time.
+- **Committed secrets** -- see the last section.
+
+### Out of scope
+
+- **The TypeScript SDK and the command-line tool.** They are not in this
+  repository. Report those against
+  [BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-sdk).
+- **The hosted web frontend and the backend service.** They are not in this
+  repository either. What you can verify from here is that the published formula
+  and contract match this code, and that live responses match both. A live
+  response that contradicts `docs/api-contract.md` or `docs/relic-spec.md` is
+  worth reporting, and it will be triaged as a service issue.
+- Third-party services BAZR reads from, including Solana RPC providers, Helius
+  and Jupiter. Report those to their own security programs.
+- Denial of service against public RPC endpoints, and load testing of any kind
+  against infrastructure you do not own.
+- Market outcomes. A token going to zero is not a vulnerability.
+- The market authority being able to resolve listings and slash stalls. That is
+  documented, not hidden -- see the next section.
+- Automated scanner output with no reproduction and no analysis.
+- Social engineering, phishing of maintainers, and physical access.
+- Attacks requiring the victim to have already lost their private key, or to sign
+  an arbitrary transaction constructed outside BAZR.
+- Missing rate limits on a local development server.
+
+---
+
