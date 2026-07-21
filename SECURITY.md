@@ -153,3 +153,20 @@ changes the schedule.
 
 ---
 
+## The market authority is the largest trust assumption
+
+`Market.authority` is a single key that can resolve a listing as `Survived` or
+`Faded`, slash a stall and burn part of its bond, and pause the market. Every one
+of those actions emits an event, so they are auditable after the fact. Auditable
+is not prevented. A dishonest or compromised authority can mis-resolve listings
+and destroy bonds, and no rule in this program stops it.
+
+The honest description of a stall bond is therefore a deposit held under the
+authority's judgment, not a trustless escrow. Anyone weighing whether to open a
+stall should read it that way. This is a design limitation that is disclosed
+rather than a vulnerability to report, and it is in the out-of-scope list above
+for that reason. A way for someone *other* than the authority to reach those
+powers is very much in scope.
+
+---
+
