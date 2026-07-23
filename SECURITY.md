@@ -170,3 +170,74 @@ powers is very much in scope.
 
 ---
 
+## Limits of the relic score
+
+**A relic score is an observational summary, not a financial judgement.** It
+compresses what could be observed about a token after graduation into one number
+and five axes. It is not a prediction, not a rating, not a recommendation, and
+not a statement that a token is safe.
+
+**Do not use a relic score as a reason to buy or sell anything.** It is a
+starting point for reading the on-chain data yourself, and the axis breakdown
+exists so you can go and check the underlying facts.
+
+### Every axis can be wrong
+
+Each axis is an inference over public data, and each has a known way to fail.
+None of these is hypothetical:
+
+| Axis | How it can be wrong |
+|---|---|
+| `holder_dispersion` | An exchange hot wallet, a bridge or a custody contract is one address holding many people's balances. Counted as a whale, it reads as concentration that is not there. The reverse also happens: one person split across many wallets reads as healthy dispersion. |
+| `lp_residual` | A locker contract, a vesting program or a protocol-owned position may not be recognised as locked liquidity, so real depth reads as absent. An unfamiliar pool type can be missed entirely, and the token then looks thinner than it is. |
+| `floor_shape` | Wash trading inflates trade continuity and makes a floor look supported. Thin books make one trade look like a trend. A quiet token and a dead token can produce similar shapes. |
+| `social_afterglow` | Bot amplification, purchased engagement and coordinated posting are cheap. A token can look socially alive with no humans in it. A genuinely active community on a platform that is not indexed reads as silence. |
+| `dev_wallet_state` | Deployer wallets get rotated, funds get moved through intermediaries, and redistribution is easy to hide. A tracked deployer wallet going quiet does not mean the deployer left. |
+
+Tags carry the same caveat. A tag is an observation with a confidence level, not
+a verdict, and a missing tag means nothing was observed rather than that nothing
+happened.
+
+### Missing data and bad data are different events
+
+An axis that could not be observed is marked `status: "unknown"`, is **removed
+from the weighting**, and the remaining weights are re-normalised over the axes
+that were observed. It is never folded in as a zero. The rule is specified in
+`docs/relic-spec.md` section 8, and the extension asserts it in its own tests.
+
+Folding an unobserved axis to zero would make a token whose data lookup failed
+render identically to a token that was measured and found dead. Those are
+different claims, and the number must not collapse them into one.
+
+The consequence is that a score always arrives with a coverage figure. A score
+computed over two of five axes is not the same object as one computed over five
+of five, even when the two numbers match, and the interface says which one you
+are looking at.
+
+### Low coverage produces `unclear`, not a low score
+
+When coverage is too low to support a claim, the verdict is `unclear`. It is not
+downgraded to `dead` and it is not padded up to look complete. `unclear` is a
+real answer meaning the data was not there, and it sits alongside `dormant` and
+`dead` in the verdict set for exactly that reason.
+
+### False positives are a security report
+
+If you find a case where a score, a verdict or a tag is wrong in a way that would
+mislead someone, report it through the same advisory link above. It is in scope,
+and it is treated as a real defect rather than as feedback.
+
+A false positive report is actionable when it includes:
+
+- The mint address, in full. Do not abbreviate it.
+- The score, verdict and axis breakdown that was returned, including the `status`
+  of each axis and the coverage figure.
+- The observation you believe is correct, and how you established it. A block
+  explorer link, a transaction signature or a contract address is enough.
+- Roughly when you observed it, since the underlying data moves.
+
+A scoring bug that an attacker can arrange, rather than one that occurs by
+chance, is treated as higher severity than the same bug occurring naturally.
+
+---
+
