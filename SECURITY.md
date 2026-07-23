@@ -241,3 +241,35 @@ chance, is treated as higher severity than the same bug occurring naturally.
 
 ---
 
+## What the extension sends, and where
+
+Taken from `tag-extension/manifest.json` and matching
+[`tag-extension/README.md`](tag-extension/README.md). Report anything that
+contradicts this list:
+
+- Permissions are `storage` and `alarms`. Storage holds settings, the local cache
+  and recent lookups in `chrome.storage.local`, and nothing is synced. The single
+  alarm sweeps expired cache entries, which an MV3 service worker cannot do with
+  `setInterval` because it is shut down between events.
+- Host permissions are `http://localhost:8030/*` and `https://api.bazr.market/*`.
+  Those are the only two hosts the extension may call without asking, and
+  `src/shared/constants.js` pins the same pair, with `test/manifest.test.js`
+  comparing the two lists in both directions.
+  `optional_host_permissions: https://*/*` is requested only when you point the
+  API base somewhere else, and only at the moment you save it.
+- Content scripts run at `document_idle` in the top frame only, on the sites
+  listed in the manifest and their subdomains.
+- What leaves the browser is the mint-shaped strings found on those pages, sent
+  to the API base you configured. There is no account, no sign-in and no
+  telemetry.
+- The extension never connects to a wallet, never talks to an RPC endpoint, and
+  signs nothing.
+- It ships no API key. Anyone can unzip an extension, so a key inside one is a
+  published key, and there is no slot for one in the settings schema.
+- Extension pages run under `script-src 'self'; object-src 'self'`, so no remote
+  code is loaded.
+- Turning off the automatic overlay stops any address being sent from any page;
+  the popup still works on an address you paste yourself.
+
+---
+
