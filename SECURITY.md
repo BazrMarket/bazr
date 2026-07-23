@@ -273,3 +273,16 @@ contradicts this list:
 
 ---
 
+## Handling of keys and secrets
+
+This repository contains no private keys, no API keys and no RPC credentials, and
+it must stay that way.
+
+- If you find a committed secret here, report it through the advisory link rather
+  than opening an issue, so it can be rotated before it is advertised.
+- The deploy keypair lives outside the repository and is passed to each command
+  explicitly. `.gitignore` blocks `.keys/`, `.deploy/`, `id.json`,
+  `*-keypair.json`, `*-deploy*.json`, `*-deployer*.json` and `*-wallet*.json` so
+  that a stray copy cannot be staged by accident.
+- Provider API keys belong on a server behind a proxy route. They must never
+  reach a browser bundle or an extension build.
