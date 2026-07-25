@@ -37,3 +37,24 @@ responses match both.
 
 ---
 
+## Development environment
+
+| Tool | Version | Needed for |
+|---|---|---|
+| Node.js | 22 or newer | `tag-extension/`, and the IDL check. Node 20 runs the extension build, the honesty gate and the IDL check, but not `npm test`: passing a glob to `node --test` needs Node 22, and on Node 20.19.5 it fails with `Could not find .../test/**/*.test.js`. |
+| npm | Whatever ships with your Node | Everything JavaScript. |
+| Rust | Current stable, no pin | `cargo fmt` and `cargo check` in `anchor-program/`. Verified on 1.95.0. |
+| Anchor CLI | 0.31.1 | `anchor build` and `anchor test` only. Pinned in `Anchor.toml` under `[toolchain]`. |
+| Solana CLI | Current stable | Deploying, and running the devnet scripts. Not needed to compile or format. |
+
+Lockfiles differ by package, so the install command does too.
+`tag-extension/package-lock.json` **is** committed, so `npm ci` works there, it
+is the reproducible form, and it is what CI runs. `npm install` works too and is
+fine locally.
+`anchor-program/` has no npm lockfile, so its TypeScript dependencies install
+with `npm install` only -- `npm ci` requires a lockfile and will fail.
+`anchor-program/Cargo.lock` **is** committed, which is why CI can run
+`cargo check --locked`.
+
+---
+
