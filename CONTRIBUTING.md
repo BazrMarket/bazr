@@ -128,3 +128,46 @@ Deploy keypairs are supplied from outside the repository and passed to each
 command explicitly (`--keypair`, `--provider.wallet`, `ANCHOR_WALLET`). Never
 commit one, and never change the global `solana config` to avoid typing a path.
 
+## Working on `tag-extension/`
+
+The full loop, and all four of these pass on a clean checkout:
+
+```bash
+cd tag-extension
+npm install
+npm test          # node --test over test/**/*.test.js -- 203 tests
+npm run gate      # scans for hype vocabulary, prints scanned/exempted/violations/verdict
+npm run build     # production bundle plus build/unpacked and the zip
+```
+
+`npm run smoke -- --base <url>` calls a live API and checks the responses against
+the contract. It is useful by hand and is deliberately not in CI: a failure there
+would report on the service being down rather than on your change.
+
+When you extend it:
+
+- **Keep `src/shared/` runnable under plain Node.** Nothing there may reach for a
+  global `chrome`: where a browser API is unavoidable it arrives as an injected
+  parameter with a default, as in `readSettings(storage = chrome.storage.local)`,
+  so a test can pass a fake. That is what lets the tests import these modules
+  directly with no browser harness. Everything else in `src/shared/` touches no
+  `chrome.*` at all, and it is worth keeping it that way.
+- **Address detection stays strict.** The check is "decodes to exactly 32 bytes",
+  not "matches a 32-44 character base58 regex" -- the regex form also matches
+  transaction signature fragments, arbitrary hashes and URL slugs. Candidates are
+  additionally confirmed against the API before anything is drawn.
+- **New system or protocol addresses go in `EXCLUDED_ADDRESSES`.** Tagging the SPL
+  Token program with a relic score is a bug.
+- **Request the narrowest host permissions that work.** The extension draws on
+  other people's pages and must not become a reason to distrust them. Anything
+  beyond the two compiled-in API origins goes through
+  `optional_host_permissions`, requested at the moment the user saves the change.
+- **No API key, ever.** Anyone can unzip an extension, so a key inside one is a
+  published key. There is no slot for one in the settings schema, and a test
+  asserts that.
+- **An unobservable axis renders as `unknown`, never as 0.** Collapsing "could not
+  be seen" into "is bad" would draw every token with a failed lookup as dead.
+
+`npm run icons` redraws `public/icons/*.png` and needs Python 3 with Pillow.
+Commit the regenerated PNGs when you run it.
+
