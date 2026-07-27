@@ -171,3 +171,13 @@ When you extend it:
 `npm run icons` redraws `public/icons/*.png` and needs Python 3 with Pillow.
 Commit the regenerated PNGs when you run it.
 
+## Working on `docs/`
+
+The specifications are the published claim, and the code is the implementation of
+that claim. Where a document and the code disagree, that is a defect in one of
+them, and each document says which side it expects to be corrected. Keep that
+property: a specification that quietly drifts behind the code is worse than none,
+because people read it and believe it.
+
+---
+
