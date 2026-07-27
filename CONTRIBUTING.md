@@ -181,3 +181,34 @@ because people read it and believe it.
 
 ---
 
+## Changing the score
+
+**A pull request that changes how a relic score is produced must change
+[`docs/relic-spec.md`](docs/relic-spec.md) first, in the same pull request.**
+
+This covers axis weights, axis definitions, verdict thresholds, coverage rules,
+and anything that can move a token between `dormant`, `dead` and `unclear`. The
+specification is the reason to trust the number. If the code moves and the
+specification does not, the published formula is no longer the formula being run,
+and there is nothing left to check.
+
+The same rule applies to `docs/stall-spec.md` for on-chain layout changes and to
+`docs/api-contract.md` for wire-format changes.
+
+Two rules inside the model are not up for negotiation. Propose a change to either
+with a full argument rather than a patch:
+
+1. **An unobserved axis is removed from the weighting denominator and the
+   remaining weights are re-normalised. It is never folded in as a zero.**
+   Missing data and bad data are different events. Folding an unobserved axis to
+   zero makes a token whose lookup failed render identically to a token that was
+   measured and found dead.
+2. **Low coverage produces the verdict `unclear`, not a low score.** `unclear` is
+   a real answer. Padding it into a number that looks complete is the failure
+   mode this project exists to avoid.
+
+Also not negotiable, in the on-chain schema: a stall's losses are stored at the
+same width as its wins, and `reputation` is signed.
+
+---
+
