@@ -212,3 +212,47 @@ same width as its wins, and `reputation` is signed.
 
 ---
 
+## Commit messages
+
+**Write a plain English imperative sentence. No prefix, no colon, no scope.**
+
+This project does not use Conventional Commits. Do not open a message with
+`feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `build`, `ci`, `perf` or
+`style`. More generally, **the message must not begin with a token followed by a
+colon**, in any form, including `word:`, `word(scope):` and `word(scope)!:`.
+
+Capitalise the first word. No trailing period. Roughly 72 characters or fewer.
+Say what the commit does, as if completing the sentence "this commit will ...".
+
+### Do this
+
+```
+Remove unknown axes from the weighting denominator
+Store stall losses at the same width as wins
+Decode base58 fully instead of matching on length
+Compare the committed IDL against the program source in CI
+Publish the axis weights alongside the score
+```
+
+### Not this
+
+```
+feat: remove unknown axes from the weighting denominator
+fix(program): store stall losses at the same width as wins
+chore: bump esbuild
+docs: update the relic spec
+extension: add the popup history list
+```
+
+The last one contains no Conventional Commits keyword and is still wrong. The
+banned shape is a token followed by `:` at the start of the line, whatever the
+token is.
+
+Check your own branch before opening a pull request. This should print nothing:
+
+```bash
+git log --format=%s origin/main..HEAD | grep -E '^[A-Za-z][A-Za-z0-9_-]*(\([^)]*\))?!?:'
+```
+
+---
+
