@@ -332,3 +332,23 @@ grep -nP '[\x{1F000}-\x{1FAFF}\x{2190}-\x{21FF}\x{2300}-\x{23FF}\x{2460}-\x{24FF
 
 ---
 
+## Language and claims
+
+- **Everything in this repository is written in English.** Code, comments,
+  documentation, commit messages and pull request text.
+- **No marketing language about price.** The words `guaranteed`, `100x`, `moon`,
+  `gem`, `alpha`, and phrases such as "next pump", do not belong in a repository
+  whose product is a survival measurement. The extension's honesty gate enforces
+  this over `tag-extension/`; the rest of the repository is on you.
+- **A relic score is an observational summary, not a prediction.** It is not a
+  rating, not a recommendation, and not a statement that a token is safe. Do not
+  write it up as one.
+- **Do not describe something as working when it does not.** If a command,
+  package, deployment or listing does not exist, say so plainly, the way
+  [DEPENDENCIES.md](DEPENDENCIES.md) Table 3 does. Documentation that oversells
+  is found in a minute and costs more than the missing feature would have.
+- **Failures are displayed at the same size as successes.** That applies to stall
+  records, to rug and bundle observations, and to this documentation.
+
+---
+
