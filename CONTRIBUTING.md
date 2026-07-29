@@ -309,3 +309,26 @@ review.
 
 ---
 
+## No emoji
+
+**No emoji anywhere.** Not in commit messages, code, comments, documentation,
+pull request titles or descriptions, test names, log output, or anything the
+interface renders. This includes GitHub shortcodes such as `:fire:`, and it
+includes symbol characters used as status marks. Write `PASS` and `FAIL`, or `O`
+and `X`.
+
+The reasons, since "house style" is not one:
+
+- They render differently on every platform, and some do not render at all.
+- They break `grep`, alignment and terminal width arithmetic.
+- A number that claims to be an observation should not be decorated like an
+  advertisement.
+
+To check a file:
+
+```bash
+grep -nP '[\x{1F000}-\x{1FAFF}\x{2190}-\x{21FF}\x{2300}-\x{23FF}\x{2460}-\x{24FF}\x{25A0}-\x{27BF}\x{2B00}-\x{2BFF}\x{FE0F}\x{200D}]' path/to/file
+```
+
+---
+
