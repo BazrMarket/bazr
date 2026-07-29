@@ -256,3 +256,56 @@ git log --format=%s origin/main..HEAD | grep -E '^[A-Za-z][A-Za-z0-9_-]*(\([^)]*
 
 ---
 
+## The honesty gate
+
+`tag-extension/scripts/gate-honesty.sh` enforces section 0 of
+[`docs/relic-spec.md`](docs/relic-spec.md) mechanically: the vocabulary of
+certainty, price multiples and imminent movement stays out of the code and out
+of anything the interface renders. Run the control group first, then the gate:
+
+```bash
+cd tag-extension
+npm run gate -- --selftest
+npm run gate
+```
+
+The control group comes first because a detector that always fails passes an
+audit exactly as easily as one that always succeeds. It checks both directions
+-- that the scanner fires on seeded copy and stays quiet on clean source -- and
+that neither exemption spreads to the file next door. It prints one line per
+case and then a total:
+
+```
+selftest ok=14 fail=0
+```
+
+The gate itself prints four lines, and on a clean tree they read:
+
+```
+scanned=38
+exempted=14
+violations=0
+verdict=PASS
+```
+
+Read all four, not only the last. `scanned=0` is a self-failure and exits 2,
+because having looked at nothing and having found nothing print the same thing.
+So is an exemption rule wide enough to swallow the whole tree. When there are
+violations the `file:line:text` hits come out **before** the verdict, so the
+lines that matter survive a truncated log. Exit codes are 0 for PASS, 1 for
+FAIL and 2 for SELF-FAIL; treat 2 as a failure, never as a pass.
+
+Two exemptions exist, and both are announced on stderr rather than applied
+quietly. Files whose job is to name the banned vocabulary in order to reject it
+-- anything under `test/`, `*.test.*` and `*.spec.*` sources, and `gate-*.sh`
+scripts -- are excused, because counting a control group's own assertions as
+violations would make writing one a punishable act. So is any file carrying the
+literal marker `bazr-honesty-allow-file`, which is why this file carries it. A
+specification document is deliberately **not** excused: prose about the product
+is exactly where the strictest reading belongs.
+
+The gate covers `tag-extension/`. The rest of the repository is on you and on
+review.
+
+---
+
