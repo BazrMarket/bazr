@@ -352,3 +352,40 @@ grep -nP '[\x{1F000}-\x{1FAFF}\x{2190}-\x{21FF}\x{2300}-\x{23FF}\x{2460}-\x{24FF
 
 ---
 
+## Pull requests
+
+One change per pull request. Describe what you changed and how you verified it,
+including the commands you ran and their output. "It should work" is not a
+verification.
+
+Before you open it:
+
+- [ ] `cd anchor-program && cargo fmt --all --check && cargo check --all-targets --locked`
+      passes, if you touched `anchor-program/`
+- [ ] `cd tag-extension && npm install && npm test && npm run gate && npm run build`
+      passes, if you touched `tag-extension/`
+- [ ] `npm run gate -- --selftest` printed `fail=0` before you trusted the gate,
+      and `npm run gate` printed `verdict=PASS` with `scanned` not `0`
+- [ ] `node .github/scripts/check-idl.mjs` prints `verdict=PASS`, if you touched
+      the program source or the IDL
+- [ ] Any test you added passes locally and makes no live network calls
+- [ ] Zero emoji, in every file you touched and in the pull request text
+- [ ] Zero commit messages beginning with a token and a colon
+- [ ] Zero secrets: no API keys, no RPC URL carrying a key, no private keys, no
+      `.env` file, no real wallet in a fixture
+- [ ] `docs/relic-spec.md` updated in the same pull request, if you changed how a
+      score or a verdict is produced
+- [ ] English only
+- [ ] No claim in the documentation that the code does not support
+
+### Security issues do not go here
+
+Do not open a public issue or pull request for a vulnerability. Report it
+privately through GitHub Security Advisories. See [SECURITY.md](SECURITY.md).
+
+A false positive in the scoring model is also a security report, and it belongs
+in that same private channel with the full mint address and the observed axis
+breakdown.
+
+---
+
