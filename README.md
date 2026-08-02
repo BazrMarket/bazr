@@ -65,3 +65,28 @@ Do not use a relic score as a reason to buy or sell anything. The known ways it
 can be wrong are written down in [`docs/security.md`](docs/security.md), and we
 would rather you read those than trust the number.
 
+## The five axes and their weights
+
+Every relic score is a weighted mean over five axes. The weights are fixed,
+published, and shipped on the wire with every response, so no client has to
+keep a second copy that can drift:
+
+| Axis | Weight | What it observes |
+| --- | --- | --- |
+| `lp_residual` | **0.30** | Quote-side liquidity that is still there, and whether the LP is burned or locked |
+| `floor_shape` | **0.25** | Whether trading still happens at all, and how recently |
+| `holder_dispersion` | **0.20** | How concentrated the remaining supply is, excluding pool, exchange, burn and insider wallets |
+| `dev_wallet_state` | **0.15** | Mint and freeze authority, and how much the creator still holds |
+| `social_afterglow` | **0.10** | Breadth of distinct participants and new holder inflow |
+| | **1.00** | |
+
+The ordering is not arbitrary. `lp_residual` carries the most weight because if
+there is no exit liquidity, nothing else about the token matters much.
+`social_afterglow` carries the least because it is the easiest signal to
+manufacture, and a weight of 0.10 caps how far a manipulated signal can move the
+result.
+
+Weights are given before re-normalisation. The derivation of each axis,
+including every clamp and interpolation, is in
+[`docs/relic-spec.md`](docs/relic-spec.md) section 7.
+
