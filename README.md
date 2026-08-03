@@ -90,3 +90,58 @@ Weights are given before re-normalisation. The derivation of each axis,
 including every clamp and interpolation, is in
 [`docs/relic-spec.md`](docs/relic-spec.md) section 7.
 
+## Aggregation and verdicts
+
+```text
+available = { axis : axis.status == "ok" }
+W_avail   = sum(weight of available)
+
+relic     = sum(weight * score for available) / W_avail        # 0..100
+```
+
+An axis with `status: "unknown"` leaves the numerator *and* the denominator. It
+is not counted as zero. Every response also carries the coverage figure, so a
+caller can see how much of the picture was actually observed.
+
+Here is that rule on live data. Wrapped SOL, from the deployed service:
+
+```bash
+curl -s https://api.bazr.market/relic/So11111111111111111111111111111111111111112
+```
+
+```text
+score    71          verdict  dormant
+
+lp_residual         60    weight 0.30   ok
+dev_wallet_state   100    weight 0.15   ok
+social_afterglow    60    weight 0.10   ok
+holder_dispersion   --    weight 0.20   unknown
+floor_shape         --    weight 0.25   unknown
+
+(0.30*60 + 0.15*100 + 0.10*60) / 0.55 = 70.9  ->  71
+```
+
+Two of the five axes could not be observed, so 45 percent of the weight is
+missing. The score is the weighted mean of the three that could be observed,
+re-normalised over the 0.55 that remained. Folding the two unobserved axes in as
+zeros would have produced 39, and a token that was never measured would be
+indistinguishable from a token measured and found dead.
+
+The verdict is then decided in order, first rule to match wins:
+
+| Condition | Verdict |
+| --- | --- |
+| `lp_residual` unknown, or `W_avail < 0.50` | `unclear` (not enough was observed) |
+| `lp_residual <= 10` and `floor_shape` unknown or `<= 10` | `dead` |
+| `relic <= 33` | `dead` |
+| `relic >= 60` and `lp_residual >= 40` | `dormant` |
+| `relic >= 60` but `lp_residual < 40` | `unclear` (high total, but no way out) |
+| `34 <= relic <= 59` | `unclear` |
+
+The last two rows are the ones worth arguing about, so here is the reasoning.
+The 34-59 band is where the survival signals genuinely disagree with each other;
+forcing a `dead` or a `dormant` out of it would be inventing a conclusion. And a
+high aggregate with thin liquidity is not `dormant`, because dormant is supposed
+to mean *tradeable again* -- when the aggregate and the deciding axis disagree,
+the deciding axis wins.
+
