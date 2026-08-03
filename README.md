@@ -145,3 +145,40 @@ high aggregate with thin liquidity is not `dormant`, because dormant is supposed
 to mean *tradeable again* -- when the aggregate and the deciding axis disagree,
 the deciding axis wins.
 
+## Architecture
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#F2EFE3', 'primaryTextColor': '#3A3A38', 'primaryBorderColor': '#1F6FB2', 'lineColor': '#1F6FB2', 'secondaryColor': '#C8A87C', 'tertiaryColor': '#D9B85C', 'fontFamily': 'monospace'}}}%%
+graph TD
+  CHAIN["Solana devnet<br/>bazr_market program"]
+  PROG["anchor-program/<br/>stalls, listings, crates, bonds"]
+  IDL["idl/bazr_market.json<br/>published interface"]
+  IDX["Scoring service<br/>not in this repository"]
+  API["api.bazr.market<br/>contract in docs/"]
+  SDK["@bazr/sdk<br/>BazrMarket/bazr-sdk"]
+  EXT["tag-extension/<br/>BAZR Tag, MV3"]
+  CLI["bazr-cli<br/>BazrMarket/bazr-sdk"]
+
+  PROG --> CHAIN
+  PROG --> IDL
+  CHAIN --> IDX
+  IDX --> API
+  API --> SDK
+  IDL --> SDK
+  SDK --> CLI
+  API --> EXT
+
+  style API fill:#1F6FB2,stroke:#3A3A38,color:#F2EFE3
+  style CHAIN fill:#D9B85C,stroke:#3A3A38,color:#3A3A38
+  style IDL fill:#C8A87C,stroke:#3A3A38,color:#3A3A38
+```
+
+The scoring service and the web frontend are deliberately not open source. What
+is here is everything needed to verify the score and to build against it: the
+formula, the wire contract, the on-chain program that records stall reputation,
+its IDL, and a client that renders the result.
+
+See [`docs/architecture.md`](docs/architecture.md) for the layer-by-layer
+breakdown and [`DEPENDENCIES.md`](DEPENDENCIES.md) for an accounting of what is
+ours and what is someone else's.
+
