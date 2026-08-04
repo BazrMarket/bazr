@@ -182,3 +182,31 @@ See [`docs/architecture.md`](docs/architecture.md) for the layer-by-layer
 breakdown and [`DEPENDENCIES.md`](DEPENDENCIES.md) for an accounting of what is
 ours and what is someone else's.
 
+## What is in this repository
+
+```text
+anchor-program/    Anchor program bazr_market -- market, stalls, listings, crates
+idl/               bazr_market.json, the published program interface
+tag-extension/     BAZR Tag -- MV3 extension that overlays scores on addresses
+docs/              relic-spec, stall-spec, tag-spec, api-contract,
+                   research, architecture, security
+```
+
+| Component | State |
+| --- | --- |
+| `anchor-program/` | Eleven instructions, four account types, `Cargo.lock` committed. Deployed to **devnet only** |
+| `idl/` | Produced by `anchor build` from the source in this tree. Matches the deployed program and the IDL account published on devnet -- see below |
+| `tag-extension/` | Builds, tests, and an honesty gate. **Not on the Chrome Web Store** |
+| `docs/` | Complete for the score formula, stall rules, tag rules, API contract, and the research behind the axes |
+| `@bazr/sdk`, `bazr-cli` | In [BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-sdk). Build from source; see below |
+
+### Nothing here is on a package registry
+
+**`@bazr/sdk` is not on npm. `bazr-cli` is not on npm. BAZR Tag is not on the
+Chrome Web Store.** `npm view bazr-cli` answers `E404`, and there is no store
+listing to link to, so this README deliberately carries no global-install line
+for either of them. Every install path in this repository and in
+[BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-sdk) builds from source,
+and that is not a workaround shown for completeness -- it is the only path that
+exists.
+
