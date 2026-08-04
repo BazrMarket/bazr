@@ -210,3 +210,50 @@ for either of them. Every install path in this repository and in
 and that is not a workaround shown for completeness -- it is the only path that
 exists.
 
+## The on-chain program
+
+The `bazr_market` program is deployed to **Solana devnet only. It is not on
+mainnet.** No mainnet transaction has ever been sent, and no user funds are at
+risk from it.
+
+| Field | Value |
+| --- | --- |
+| Program ID | `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` |
+| Cluster | `devnet` |
+| Loader | BPF Upgradeable, `executable = true` |
+| Anchor | 0.31.1 |
+| Explorer | [explorer.solana.com/address/FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb?cluster=devnet](https://explorer.solana.com/address/FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb?cluster=devnet) |
+
+Anyone can check that for themselves without trusting this table:
+
+```bash
+solana account FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb --url devnet
+```
+
+The scoring pipeline and the program are on different clusters on purpose, and
+the API reports both separately rather than collapsing them into one `cluster`
+field: `data_cluster` is `mainnet` because token data is read from mainnet, and
+`program_cluster` is `devnet` because that is where the program lives.
+Collapsing those two would let "reads mainnet" be presented as "deployed on
+mainnet", which is exactly the claim this project refuses to make.
+
+### A stall's losses are stored the same way as its wins
+
+This is a layout decision, not a UI preference, which is why it appears in the
+README of the program repository and not in a style guide.
+
+`Stall` holds `resolved_wins` and `resolved_losses` as the same type, and
+`reputation` is signed, so a curator who is wrong more often than right goes
+below zero. A listing is never deleted -- withdrawing marks it `Withdrawn`. A
+stall account is never deallocated, so a losing record cannot be reset by
+closing and reopening at the same address. Resolution is an authority action, so
+a stall cannot grade its own calls.
+
+The API returns those two counters as raw numbers and deliberately exposes **no
+pre-computed win rate**, because a single ratio is the easiest place for a bad
+record to hide behind its denominator. The stall currently on devnet reads
+`resolved_wins 2 / resolved_losses 1`, and both halves of that are on chain.
+
+See [`docs/stall-spec.md`](docs/stall-spec.md) for the full account layout and
+the bond and slash rules.
+
