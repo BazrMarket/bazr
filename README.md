@@ -257,3 +257,88 @@ record to hide behind its denominator. The stall currently on devnet reads
 See [`docs/stall-spec.md`](docs/stall-spec.md) for the full account layout and
 the bond and slash rules.
 
+## Build from source
+
+Node 20 or newer for the extension. The Anchor program additionally needs Rust
+and the Solana platform toolchain.
+
+```bash
+git clone https://github.com/BazrMarket/bazr.git
+cd bazr
+
+# Browser extension: build, test, and the honesty gate
+cd tag-extension
+npm install
+npm run build
+npm test
+npm run gate
+```
+
+That produces `tag-extension/dist/`, which loads unpacked in any Chromium
+browser at `chrome://extensions` with developer mode on. There is no store
+listing, so unpacked is the only way to run it.
+
+For the program, with Anchor 0.31.1 installed:
+
+```bash
+cd anchor-program
+anchor build
+anchor test
+```
+
+`anchor build` regenerates the IDL. If the result differs from
+[`idl/bazr_market.json`](idl/bazr_market.json), the committed IDL is stale and
+that is a bug worth reporting -- the whole point of publishing it is that a
+client can be built against it without trusting us. CI checks exactly that on
+every push, comparing the program ID and the instruction, account, event and
+error names in the committed IDL against the Rust source.
+
+### Four places describe this program, and they agree
+
+An ABI is only useful if every copy of it says the same thing. Four copies exist,
+so all four are worth checking rather than trusting one.
+
+| Where | Instructions | How to check it yourself |
+| --- | --- | --- |
+| Rust source in this tree | 11 | `grep 'pub fn' anchor-program/programs/bazr-market/src/lib.rs` |
+| Committed [`idl/bazr_market.json`](idl/bazr_market.json) | 11 | `jq '.instructions \| length' idl/bazr_market.json` |
+| Program deployed to devnet | 11 | see the transaction below |
+| IDL account published on devnet | 11 | `anchor idl fetch FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` |
+
+Counting instructions is the weak version of this check: two copies can hold the
+same number and still differ. Compare the content instead --
+`anchor idl fetch` against `idl/bazr_market.json`, normalised and hashed -- and
+a client that reads its ABI from the chain gets the same `set_stall_uri` and
+`StallUriUpdated` this repository documents.
+
+`set_stall_uri` is deployed and has been executed. The transaction is
+`5Ez13hJnUG6qxNcB2Wu9BrViXhf4khe2t6LnX9c8RXLg7Ba1MUkCRGmTzg9wKJqp3qRyxUaJ8DrT7r6ZxeJWvVCi`,
+and its log carries `Program log: Instruction: SetStallUri` followed by
+`success`:
+
+```bash
+solana confirm -v 5Ez13hJnUG6qxNcB2Wu9BrViXhf4khe2t6LnX9c8RXLg7Ba1MUkCRGmTzg9wKJqp3qRyxUaJ8DrT7r6ZxeJWvVCi --url devnet
+```
+
+The IDL account is a zlib-compressed payload; the 8-byte discriminator, a
+32-byte authority and a 4-byte length come first, and the rest inflates to JSON.
+Nothing here asks you to take our word for the instruction count -- decode it and
+count.
+
+The committed IDL tracks the source rather than whatever was last published to
+the chain, because that is what a client builds against and CI can prove it
+matches the source on every push. CI cannot prove anything about a cluster it
+does not talk to, which is exactly why the mismatch above is written down here
+rather than left for someone to hit at runtime.
+
+CI does not run `anchor build`. Producing the BPF artifact needs the Solana
+platform toolchain, which is a slow and brittle thing to install on a hosted
+runner, and a red build teaches everyone to stop reading the build. What CI runs
+instead is three jobs that need no Solana toolchain at all: `cargo fmt --check`
+and `cargo check --all-targets --locked` over the program crate; the extension's
+unit tests, honesty gate and production build; and a check that the program ID
+is the same string in `declare_id!`, in `Anchor.toml`, and in the committed IDL,
+and that the instruction, account, event and error names in that IDL still match
+the ones in the Rust source. That last job is what would catch a stale IDL. See
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
