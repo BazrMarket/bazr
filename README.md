@@ -342,3 +342,24 @@ and that the instruction, account, event and error names in that IDL still match
 the ones in the Rust source. That last job is what would catch a stale IDL. See
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
+## Reading a score
+
+The wire format is specified in [`docs/api-contract.md`](docs/api-contract.md)
+and is stable enough to code against directly:
+
+```bash
+curl -s https://api.bazr.market/relic/<mint>
+curl -s https://api.bazr.market/relic/<mint>/tags
+curl -s https://api.bazr.market/market/stats
+```
+
+Every scored response carries `axes` with a per-axis `status`, `weight`, and
+`detail`; the `sources` that produced each observation and when they were
+fetched; `scored_at`; and a `disclaimer` field that says, in the payload itself,
+`Survival-signal summary, not a prediction of price or revival.`
+
+For a typed client that validates all of that against the contract before it
+reaches your code, use [BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-sdk).
+It builds from source and its README carries the re-normalisation maths as an
+executable assertion.
+
