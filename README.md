@@ -363,3 +363,19 @@ reaches your code, use [BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-
 It builds from source and its README carries the re-normalisation maths as an
 executable assertion.
 
+## What BAZR does not build
+
+This is a scope commitment, not a roadmap gap.
+
+- **No new-token feed, no live trending, no sniping.** Those belong to the first
+  ten minutes of a token's life, and that market is thoroughly served. BAZR's
+  time axis starts after graduation and never moves earlier.
+- **No in-house DEX, order book, or perps.** Routing goes over liquidity that
+  already exists. When a quote comes from Jupiter, the response says so in its
+  `source` field rather than presenting the route as ours.
+- **No hidden failure record.** Covered above: losses are stored at the same
+  width as wins, and there is no win-rate field to round them away.
+- **No revival prediction.** There is no probability of recovery in the
+  contract, no field that could be read as one, and no verdict that means "this
+  will come back".
+
