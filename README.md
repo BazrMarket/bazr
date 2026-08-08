@@ -379,3 +379,16 @@ This is a scope commitment, not a roadmap gap.
   contract, no field that could be read as one, and no verdict that means "this
   will come back".
 
+## Documentation
+
+| Document | Contents |
+| --- | --- |
+| [`docs/relic-spec.md`](docs/relic-spec.md) | The scoring formula. Every weight, threshold, and clamp |
+| [`docs/stall-spec.md`](docs/stall-spec.md) | Stall accounts, bonds, slashing, and how a record is resolved |
+| [`docs/tag-spec.md`](docs/tag-spec.md) | Rug, bundle, LP-lock, and creator-holding label rules |
+| [`docs/api-contract.md`](docs/api-contract.md) | Wire format shared by the API, SDK, extension, and web |
+| [`docs/research.md`](docs/research.md) | Source material behind the axes, with verified and unverified claims marked separately |
+| [`docs/architecture.md`](docs/architecture.md) | Layer responsibilities and data flow |
+| [`docs/security.md`](docs/security.md) | Threat model, and the specific ways a relic score can be wrong |
+| [`DEPENDENCIES.md`](DEPENDENCIES.md) | What is implemented here versus delegated to Jupiter, Helius, and Solana RPC |
+
