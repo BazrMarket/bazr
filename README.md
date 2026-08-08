@@ -392,3 +392,11 @@ This is a scope commitment, not a roadmap gap.
 | [`docs/security.md`](docs/security.md) | Threat model, and the specific ways a relic score can be wrong |
 | [`DEPENDENCIES.md`](DEPENDENCIES.md) | What is implemented here versus delegated to Jupiter, Helius, and Solana RPC |
 
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). Two rules catch most first-time
+submissions: commit messages are plain sentences with no `type:` prefix, and any
+change to scoring behaviour has to change
+[`docs/relic-spec.md`](docs/relic-spec.md) first, because that file is the
+specification and the code follows it.
+
