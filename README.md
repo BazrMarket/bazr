@@ -400,3 +400,13 @@ change to scoring behaviour has to change
 [`docs/relic-spec.md`](docs/relic-spec.md) first, because that file is the
 specification and the code follows it.
 
+## Security
+
+Report vulnerabilities through
+[GitHub Security Advisories](https://github.com/BazrMarket/bazr/security/advisories/new)
+rather than a public issue. Full policy in [`SECURITY.md`](SECURITY.md).
+
+A scoring false positive counts as a reportable issue. If a token is scored in a
+way the spec does not justify, that is a defect in this project, and a report
+with the mint address and the observed values is genuinely useful to us.
+
