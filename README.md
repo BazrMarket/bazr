@@ -410,3 +410,6 @@ A scoring false positive counts as a reportable issue. If a token is scored in a
 way the spec does not justify, that is a defect in this project, and a report
 with the mint address and the observed values is genuinely useful to us.
 
+## License
+
+MIT. See [`LICENSE`](LICENSE).
