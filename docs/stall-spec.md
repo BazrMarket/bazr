@@ -60,3 +60,21 @@ same address, and return with its counters back at zero.
 
 ---
 
+## 1. Program derived addresses
+
+`constants.rs` is the single source of truth for derivation. The web client, the indexer
+and the program must all use the same bytes, and none of these seeds may change after a
+first mainnet deployment because every existing address would move.
+
+| Account | Seeds | Constant |
+|---|---|---|
+| `Market` | `["market"]` | `MARKET_SEED` |
+| Bond escrow token account | `["bond_vault"]` | `BOND_VAULT_SEED` |
+| `Stall` | `["stall", owner]` | `STALL_SEED` |
+| `Listing` | `["listing", stall, mint]` | `LISTING_SEED` |
+| `Crate` | `["crate", creator, crate_id_le]` | `CRATE_SEED` |
+
+`crate_id_le` is the `u64` crate id serialised **little-endian**. A client that serialises
+it the other way derives a different address, and the failure surfaces as an account that
+cannot be found rather than as an error naming the cause.
+
