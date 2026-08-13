@@ -78,3 +78,33 @@ first mainnet deployment because every existing address would move.
 it the other way derives a different address, and the failure surfaces as an account that
 cannot be found rather than as an error naming the cause.
 
+## 2. Hard bounds
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `MAX_BPS` | `10_000` | 100 percent, in basis points |
+| `MAX_RELIC_SCORE` | `1_000` | **the on-chain relic scale runs 0 to 1000**, see 2.1 |
+| `MAX_STALL_URI_LEN` | `96` | maximum bytes in a stall's evidence URI |
+| `MAX_CRATE_NAME_LEN` | `32` | maximum bytes in a crate name |
+| `MAX_CRATE_MINTS` | `16` | maximum mints in one crate |
+| `REPUTATION_STEP` | `100` | how far a resolution moves reputation. **A loss subtracts exactly what a win adds** |
+
+### 2.1 The on-chain score scale is ten times the API scale
+
+| Layer | Range | Canonical in |
+|---|---|---|
+| API and UI | `0..=100` | [`./api-contract.md`](./api-contract.md), [`./relic-spec.md`](./relic-spec.md) |
+| On-chain `relic_score_at_listing` | **`0..=1000`**, a `u16` | `constants.rs`, `MAX_RELIC_SCORE` |
+
+**Treating the two as one number is wrong by a factor of ten, and it is wrong quietly.**
+An out-of-range value is rejected with `RelicScoreOutOfRange`, so a caller might expect a
+mis-scaled value to be caught. It is not: an API-scale score of `47` is inside `0..=1000`
+and is therefore accepted and written as 47 out of 1000, a tenth of what was meant. There
+is no later opportunity to notice, because the listing is immutable once written.
+
+Clients must convert explicitly in both directions: multiply when committing a listing,
+divide when rendering one. Nothing on chain performs the conversion, and nothing on chain
+can detect that it was skipped.
+
+---
+
