@@ -108,3 +108,40 @@ can detect that it was skipped.
 
 ---
 
+## 3. `Market`, the global configuration
+
+`LEN = 224` bytes plus the 8-byte discriminator. One account per deployment, created once
+by the authority through `initialize_market`.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `authority` | `Pubkey` | **Resolves listings, slashes stalls, pauses the market** |
+| `bazr_mint` | `Pubkey` | The SPL or Token-2022 mint used for stall bonds |
+| `bond_vault` | `Pubkey` | Bond escrow token account, owned by the market PDA |
+| `stall_bond_amount` | `u64` | Bond a stall must escrow to open, in base units of `bazr_mint` |
+| `total_stalls` | `u64` | Stalls currently open. Decremented on close and on slash |
+| `total_listings` | `u64` | Listings ever created. **Never decremented, the ledger is append-only** |
+| `total_crates` | `u64` | Crates ever created |
+| `total_resolved_wins` | `u64` | Listings resolved `Survived`, across every stall |
+| `total_resolved_losses` | `u64` | Listings resolved `Faded`. **Same width as wins: the market-wide failure count is never cheaper to store** |
+| `total_bond_burned` | `u64` | Bond destroyed by slashing, in base units |
+| `slash_bps` | `u16` | Share of a bond burned when a stall is slashed |
+| `fee_bps` | `u16` | Reserved for the haggle router. **This program charges no fee** |
+| `paused` | `bool` | When true, `open_stall` and `list_relic` are refused |
+| `bump`, `vault_bump` | `u8` | Bumps for the market PDA and the vault PDA |
+| `reserved` | `[u8; 65]` | Growth tail, see the note below |
+
+`initialize_market` refuses a `stall_bond_amount` of zero with `InvalidBondAmount`, and
+refuses either bps argument above `MAX_BPS` with `InvalidBps`.
+
+`total_stalls` is a count of open stalls rather than a lifetime total, and two paths
+reduce it: `close_stall` decrements with checked arithmetic, and `slash_stall` decrements
+with `saturating_sub`. An indexer that wants a lifetime figure must count `StallOpened`
+events instead of reading this field.
+
+**Every account ends in a `reserved` tail.** A new field appended inside that tail can be
+added without migrating existing accounts, but it reads as zero on accounts written before
+it existed. Only a lifetime accumulator that legitimately starts at zero may ever be added
+that way. A field added outside the tail changes the layout and invalidates every account
+already on chain.
+
