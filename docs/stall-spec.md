@@ -145,3 +145,28 @@ it existed. Only a lifetime accumulator that legitimately starts at zero may eve
 that way. A field added outside the tail changes the layout and invalidates every account
 already on chain.
 
+## 4. `Stall`
+
+`LEN = 216` bytes plus the discriminator. PDA `["stall", owner]`.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `owner` | `Pubkey` | The address the PDA is derived from |
+| `bond_amount` | `u64` | Bond currently escrowed. Zero once closed or slashed |
+| `slashed_amount` | `u64` | Bond burned by a slash. **Permanent record, never reset** |
+| `opened_at` | `i64` | Unix timestamp from the on-chain clock |
+| `closed_at` | `i64` | Zero while open. Stamped by `close_stall` |
+| `reputation` | `i64` | `+100` per win, `-100` per loss. **Signed on purpose: a stall that is wrong more often than right must be able to go below zero** |
+| `listings_count` | `u32` | Listings ever created by this stall |
+| `active_listings` | `u32` | Listings still `Pending` |
+| `resolved_wins` | `u32` | Listings resolved `Survived` |
+| `resolved_losses` | `u32` | Listings resolved `Faded`. **The same `u32`** |
+| `slashed` | `bool` | **Permanent mark.** A slashed stall can never list again, close, or reclaim a bond |
+| `bump` | `u8` | PDA bump |
+| `uri` | `String` | Link to the stall's published reasoning. At most 96 bytes; the text itself lives off chain. **The only field on this account that may change after `open_stall`**, via `set_stall_uri`, and see 6.6 for why |
+| `reserved` | `[u8; 26]` | Growth tail |
+
+There is no field anywhere in this account from which a single summary figure could be
+derived without also exposing both counts. That is deliberate, and section 9 explains why
+the wire format keeps it that way.
+
