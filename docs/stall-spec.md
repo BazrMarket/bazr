@@ -207,3 +207,181 @@ fixed, so a withdrawal cannot be presented afterwards as a call that was never m
 
 ---
 
+## 6. Instructions and who may sign them
+
+**Authority is the substance of this specification.** Who can write what is the whole of
+the trust argument.
+
+| Instruction | Signer | What it does | Principal refusals |
+|---|---|---|---|
+| `initialize_market` | market authority | Creates the config PDA and the bond vault. Once per deployment | zero bond amount, bps above 10000 |
+| `open_stall` | stall owner | Escrows `stall_bond_amount` and opens the stall | market paused, balance below the bond, empty URI, URI above 96 bytes, mint or token-account owner mismatch |
+| `list_relic` | stall owner | Commits a score and a thesis hash to a new listing | market paused, stall slashed, stall already closed, score above 1000, all-zero thesis hash |
+| **`resolve_listing`** | **market authority only** | Records the listing as `Survived` or `Faded` | listing not `Pending`, outcome given as `Pending` or `Withdrawn` |
+| `withdraw_listing` | stall owner | Marks the listing `Withdrawn`, account retained | listing not `Pending` |
+| `close_stall` | stall owner | Returns the bond and stamps `closed_at` | stall slashed, already closed, bond already released, **`active_listings != 0`** |
+| `set_stall_uri` | stall owner | Repoints the evidence URI. Touches no counter | stall slashed, empty URI, URI above 96 bytes |
+| `slash_stall` | **market authority only** | Burns `slash_bps` of the bond, returns the rest, marks permanently | already slashed, bond already released, `slash_bps` above 10000 |
+| `create_crate` | crate creator | Issues a weighted basket | empty or oversized name, empty basket, more than 16 mints, mint and weight lists of different length, any zero weight, duplicate mint, weights not summing to 10000 |
+| `rebalance_crate` | crate creator | Replaces the composition, increments `rebalance_count` | crate frozen, plus every basket rule above |
+| `freeze_crate` | crate creator | Makes the composition final. One-way | already frozen |
+
+One property of that table is worth reading twice. Exactly two instructions require an
+existing market authority to sign, `resolve_listing` and `slash_stall`, and those two are
+precisely the ones a stall would most want for itself. Everything else is signed by the
+party whose own record it affects. `initialize_market` is a third authority instruction
+only in the sense that whoever signs it becomes the authority; there is no prior authority
+for it to check.
+
+### 6.1 Why `resolve_listing` is authority-only
+
+The source comment states the reason without decoration:
+
+```
+Resolution is an authority action, not a stall action. A stall owner grading
+their own calls would make the win/loss record worthless.
+```
+
+`ResolveListing` puts `has_one = authority` on the `market` account and takes `authority`
+as a `Signer`, so the check is structural rather than a runtime branch that a different
+call path could avoid. A stall owner therefore cannot sign a resolution of their own
+listing, with one honest caveat: the program compares keys, not roles, so a deployment
+that made a stall owner the market authority would defeat the whole gate. Nothing on chain
+prevents that configuration, and nothing on chain can detect it after the fact.
+
+Resolution is also one-way. The handler requires the current outcome to be `Pending`, so a
+resolved listing cannot be re-resolved, and `Pending` and `Withdrawn` are both rejected as
+target outcomes with `InvalidResolution`. The authority can decide how a call ended; it
+cannot decide that a call never ended, and it cannot change its mind afterwards.
+
+**This is a centralisation point and the document does not hide it.** One key decides
+outcomes. What is bought with that concession is that a stall cannot manufacture its own
+track record, and the resulting ruling is published as a `ListingResolved` event that
+carries the wins, the losses and the reputation together, so anyone can reconstruct the
+whole record from the log stream. What is not bought is protection against a dishonest or
+compromised authority; [`./security.md`](./security.md) treats that as the largest trust
+assumption in the system, and section 11 below lists the key custody question as open.
+
+### 6.2 Why `close_stall` does not deallocate the account
+
+```
+The stall account is deliberately NOT deallocated. Its PDA is derived from the
+owner, so closing with `close = owner` would let a stall with a losing record
+reopen at the same address with the counters back at zero.
+```
+
+Closing returns the escrowed bond in full, sets `bond_amount` to zero and stamps
+`closed_at`. The wins, the losses, the reputation and the slash mark all stay exactly
+where they were. Reopening is refused because `open_stall` uses `init` on the same PDA,
+which fails while the account exists.
+
+The `active_listings == 0` requirement has the same motive: **a stall cannot leave with
+open calls outstanding.** Every listing it made must first be resolved by the authority or
+withdrawn by the owner, and both of those leave a permanent record. The refusal surfaces
+as `StallHasActiveListings`.
+
+`StallClosed` carries `resolved_wins`, `resolved_losses` and `reputation` in the event
+body, so the closing record is in the log stream and not only in an account that a reader
+would have to know to go and fetch.
+
+### 6.3 A slash is a real burn
+
+`slash_stall` destroys `slash_bps` of the bond with an SPL burn CPI. Total supply of the
+bond mint actually falls, which makes the loss verifiable on chain rather than an internal
+bookkeeping entry, and the remainder is returned to the owner in the same transaction. The
+market PDA signs both movements as the vault authority.
+
+The proportion is computed in `u128`. `bond * 10000` exceeds the range of a `u64` for a
+large bond, so without the widening the slash would abort on the multiply instead of
+burning a correct share, and a bond big enough to matter would be the one that could not
+be slashed. The division back down and the narrowing to `u64` are both checked, so a value
+that somehow survives the widening still raises `MathOverflow` rather than truncating.
+
+`slashed = true` is permanent and `slashed_amount` keeps the burned quantity forever. A
+slashed stall cannot list, cannot close, and cannot reclaim a bond, so the mark sits beside
+the win and loss record for as long as the account exists, which is indefinitely.
+
+The instruction takes a `reason_code: u8` argument. It is not interpreted on chain and it
+is not validated; it is written straight into the `StallSlashed` event so an indexer can
+group slashes by cause. The mapping from code to cause is off-chain policy, and this
+program neither defines nor enforces it.
+
+### 6.4 Two edge cases in the refusal rules
+
+**A slashed stall can still withdraw its pending listings.** `withdraw_listing` checks only
+that the listing is `Pending` and that the signer owns the stall; it does not consult
+`slashed` or `closed_at`. The effect is necessary rather than incidental: `close_stall`
+refuses a slashed stall outright, so without this path those listings would sit `Pending`
+for ever with no way to reach a terminal state. Withdrawing still leaves the record and
+its committed thesis hash in place, and it still adds nothing to either counter.
+
+**A closed stall is refused by `list_relic` with `BondAlreadyReleased`.** The constraint
+being violated is `closed_at == 0`, so the error name describes the bond rather than the
+closure. Clients should map that code to a message about the stall being closed rather
+than echoing the raw text, which will read as unrelated to what the caller attempted.
+
+### 6.5 Error surface
+
+Twenty-five errors, in Anchor's custom range beginning at 6000. Codes are assigned by
+declaration order in `errors.rs`, so reordering that enum renumbers everything below the
+change. Treat the name as canonical and the number as the wire form of that name for this
+build; a client that switches on the number should pin the IDL it was built against.
+
+| Code | Name | Message |
+|---|---|---|
+| 6000 | `MarketPaused` | Market is paused; no new stalls or listings are accepted |
+| 6001 | `InvalidBps` | Basis points value must be between 0 and 10000 |
+| 6002 | `InvalidBondAmount` | Stall bond amount must be greater than zero |
+| 6003 | `InsufficientBond` | Bond token balance is below the stall bond required by the market |
+| 6004 | `BondMintMismatch` | Token account mint does not match the market bond mint |
+| 6005 | `TokenOwnerMismatch` | Token account owner does not match the stall owner |
+| 6006 | `StallSlashed` | Stall has been slashed; it can no longer list, close or reclaim its bond |
+| 6007 | `StallHasActiveListings` | Stall still has unresolved listings; resolve or withdraw them first |
+| 6008 | `BondAlreadyReleased` | Stall bond has already been released |
+| 6009 | `UriTooLong` | Evidence URI exceeds the maximum length of 96 bytes |
+| 6010 | `UriEmpty` | Evidence URI must not be empty |
+| 6011 | `RelicScoreOutOfRange` | Relic score must be between 0 and 1000 |
+| 6012 | `EmptyThesisHash` | Thesis hash must not be all zeroes; a listing requires published reasoning |
+| 6013 | `ListingNotPending` | Listing is not pending; it has already been resolved or withdrawn |
+| 6014 | `InvalidResolution` | Resolution outcome must be Survived or Faded |
+| 6015 | `CrateNameEmpty` | Crate name must not be empty |
+| 6016 | `CrateNameTooLong` | Crate name exceeds the maximum length of 32 bytes |
+| 6017 | `EmptyBasket` | Crate must hold at least one mint |
+| 6018 | `TooManyMints` | Crate holds more than the maximum of 16 mints |
+| 6019 | `BasketLengthMismatch` | Mint list and weight list must have the same length |
+| 6020 | `ZeroWeight` | Every crate weight must be greater than zero |
+| 6021 | `WeightsNotFullyAllocated` | Crate weights must sum to exactly 10000 basis points |
+| 6022 | `DuplicateMint` | Crate contains the same mint more than once |
+| 6023 | `CrateFrozen` | Crate is frozen; the issuer can no longer rebalance it |
+| 6024 | `MathOverflow` | Arithmetic overflow |
+
+---
+
+### 6.6 Why the evidence URI is the one mutable field
+
+`set_stall_uri` looks like a hole in section 0's first invariant, so it is worth stating
+exactly what it can and cannot reach. It rewrites `Stall.uri` and nothing else.
+`resolved_wins`, `resolved_losses`, `reputation`, `slashed` and `slashed_amount` are not
+writable from that instruction, and the account struct it takes carries no path to them.
+
+The reason it exists is the invariant, not an exception to it. Links rot: a domain lapses,
+a host moves, a path changes. Without this instruction the only way to correct a dead
+evidence link would be to close the stall and open a new one - and section 6.2 forbids
+exactly that, because reopening at the same PDA is how a losing record would get reset.
+A stall owner staring at a broken link and a permanent record has a motive to want that
+reset. Making the pointer mutable is what lets the record stay immutable.
+
+It costs nothing in integrity, because the URI was never the commitment. The per-listing
+`thesis_hash` is, and it is fixed before the outcome is known. The page behind any URI can
+be rewritten off chain at any moment by whoever hosts it, so freezing the pointer on chain
+would buy the appearance of tamper-resistance and none of the substance.
+
+Two refusals bound it. A slashed stall is refused, matching `list_relic` and `close_stall`:
+a slash ends the stall's ability to act on its own record at all. A closed stall is
+allowed, because its counters are already final and an unreachable evidence link serves
+nobody. `StallUriUpdated` carries `old_uri` alongside `new_uri`, for the same reason
+`ListingResolved` carries losses next to wins - the unflattering half is not cheaper to
+drop than to keep, so an indexer gets the full repoint history without opting in.
+
+---
+
