@@ -385,3 +385,32 @@ drop than to keep, so an indexer gets the full repoint history without opting in
 
 ---
 
+## 7. Events
+
+These are what an indexer reads. The design point is that `ListingResolved` carries the
+wins, the losses **and** the reputation in one payload, so building a board that shows
+only the wins costs a downstream consumer extra work rather than saving it any.
+
+```
+MarketInitialized  StallOpened  RelicListed  ListingResolved  ListingWithdrawn
+StallClosed  StallSlashed  StallUriUpdated  CrateCreated  CrateRebalanced
+CrateFrozen
+```
+
+`ListingResolved` fields:
+
+```
+listing / stall / mint / outcome / resolved_at /
+stall_resolved_wins / stall_resolved_losses / stall_reputation
+```
+
+`StallClosed` likewise carries `resolved_wins`, `resolved_losses` and `reputation`
+alongside `bond_returned` and `closed_at`. `StallSlashed` carries `bond_amount`,
+`burned_amount`, `returned_amount`, `slash_bps` and `reason_code`.
+
+Unlike accounts, **events have no `reserved` tail.** Adding a field to an existing event
+breaks decoding of every log already emitted, so new data must arrive as a new event type
+with the discriminator acting as the version. An indexer that meets an unknown
+discriminator from this program should raise an error rather than skip the record quietly,
+because a silently skipped resolution is a loss that never reaches the record.
+
