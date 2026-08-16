@@ -170,3 +170,40 @@ There is no field anywhere in this account from which a single summary figure co
 derived without also exposing both counts. That is deliberate, and section 9 explains why
 the wire format keeps it that way.
 
+## 5. `Listing`
+
+`LEN = 152` bytes plus the discriminator. PDA `["listing", stall, mint]`, so a stall can
+hold at most one listing per mint.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `stall` | `Pubkey` | The stall that made the call |
+| `mint` | `Pubkey` | The token the call is about |
+| `thesis_hash` | `[u8; 32]` | Hash of the off-chain reasoning, **committed at listing time** so the argument cannot be rewritten once the outcome is known. An all-zero hash is refused |
+| `listed_at` | `i64` | Unix timestamp |
+| `resolved_at` | `i64` | Zero while `Pending`. Also set by a withdrawal |
+| `relic_score_at_listing` | `u16` | **`0..=1000`**, see 2.1. Pinned so the call cannot be reinterpreted later against a fresher score |
+| `outcome` | `ListingOutcome` | See below |
+| `bump` | `u8` | PDA bump |
+| `reserved` | `[u8; 36]` | Growth tail |
+
+### `ListingOutcome`
+
+| Value | Meaning | Effect on the record |
+|---|---|---|
+| `Pending` | Still on the table. **The only state that can still change** | none |
+| `Survived` | Resolved in the stall's favour | `resolved_wins + 1`, reputation `+100` |
+| `Faded` | Resolved against the stall. **Recorded exactly like a win and never hidden** | `resolved_losses + 1`, reputation `-100` |
+| `Withdrawn` | Pulled by the owner before resolution. **Counts as neither** | neither counter moves |
+
+`Withdrawn` is not an escape hatch, because **the record survives**. The listing account
+stays on chain with its `mint`, its committed `thesis_hash`, its `listed_at` and the
+`resolved_at` stamp of the moment it was pulled. Anyone reading the stall's listings sees
+that a call was made and abandoned, together with when. What withdrawal buys is exclusion
+from the win and loss counters, not disappearance.
+
+The one thing it costs the stall is that the thesis hash is already public and already
+fixed, so a withdrawal cannot be presented afterwards as a call that was never made.
+
+---
+
