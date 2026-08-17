@@ -437,3 +437,19 @@ The slash percentage widens to `u128` before multiplying, as described in 6.3. T
 weight sum accumulates in `u32` for the same reason: sixteen `u16` weights cannot be summed
 in a `u16`.
 
+## 9. How this maps to the HTTP API
+
+`GET /stall` flattens this account onto the wire, and `GET /stall/{owner}` extends the same
+record with that stall's listings. The full shape is in
+[`./api-contract.md`](./api-contract.md).
+
+- **No `win_rate` field is ever added.** `resolved_wins` and `resolved_losses` ship as raw
+  counts of equal standing and the interface renders both. A single rate is the easiest
+  place in an entire product to hide a bad record, because a denominator absorbs any number
+  of losses without ever displaying one.
+- `resolved_pending` on the wire is `active_listings` on chain.
+- `slashed` is a field, not a footnote. It ships in the same object as the counts.
+- `relic_score_at_listing` crosses the wire on the 0 to 100 scale while the account holds
+  0 to 1000. The conversion happens at the service boundary, and 2.1 is the reason it has
+  to be explicit.
+
