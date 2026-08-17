@@ -414,3 +414,26 @@ with the discriminator acting as the version. An indexer that meets an unknown
 discriminator from this program should raise an error rather than skip the record quietly,
 because a silently skipped resolution is a loss that never reaches the record.
 
+## 8. Arithmetic safety
+
+Every counter uses checked arithmetic and raises `MathOverflow` instead of wrapping.
+`overflow-checks = true` is set on the workspace release profile as a second line of
+defence, so an unchecked path added later still aborts rather than wrapping silently.
+
+There are two deliberate exceptions, both `saturating_sub` and both chosen for the same
+reason: the alternative is killing a transaction over a counter that is already at its
+floor.
+
+| Site | Operation | Why saturating is safer |
+|---|---|---|
+| `Stall.active_listings` in `resolve_listing` and `withdraw_listing` | `saturating_sub(1)` | If the counter is somehow already zero, holding at zero is better than aborting a resolution that must be recorded |
+| `Market.total_stalls` in `slash_stall` | `saturating_sub(1)` | A slash must complete. The burn has already happened by this point in the handler, so aborting on a counter would leave the burn without its bookkeeping |
+
+Note the asymmetry: `close_stall` decrements `total_stalls` with `checked_sub` and will
+abort on underflow, while `slash_stall` saturates. A closure can be safely refused and
+retried; a slash cannot, because it has already destroyed tokens.
+
+The slash percentage widens to `u128` before multiplying, as described in 6.3. The crate
+weight sum accumulates in `u32` for the same reason: sixteen `u16` weights cannot be summed
+in a `u16`.
+
