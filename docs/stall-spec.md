@@ -453,3 +453,37 @@ record with that stall's listings. The full shape is in
   0 to 1000. The conversion happens at the service boundary, and 2.1 is the reason it has
   to be explicit.
 
+## 10. Devnet verification, 2026-08-18
+
+One full cycle executed as real transactions on devnet, then read back from the chain with
+`anchor-program/scripts/verify-devnet.ts`.
+
+**These numbers are test data we generated ourselves. They are not user activity, and they
+must never be quoted anywhere as usage.**
+
+| Check | Result |
+|---|---|
+| Recorded signatures re-fetched from devnet | 6 of 6 landed, every one with `err` null |
+| `Market` | `total_stalls 1` / `total_listings 3` / `total_crates 2` / `wins 2` / `losses 1` |
+| `Stall` | `RESOLVED_WINS 2` / `RESOLVED_LOSSES 1`, confirming that a failure is written to chain |
+| `Listing` | `survived` and `faded` legs both executed |
+| `Crate` | `weights [7500, 2500]` / `rebalance_count 1` |
+
+The verification script's exit condition is a conjunction rather than a sum:
+`resolved_wins > 0 AND resolved_losses > 0`. A run that only ever recorded wins would
+exercise every instruction above and still fail the check, which is the point. **Driving
+the `faded` path for real is what the exercise was for.** If the failure branch is never
+taken, nothing observable distinguishes code that records losses correctly from code that
+does not record them at all.
+
+Supporting addresses for that run, all on devnet:
+
+| | |
+|---|---|
+| Program | `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` |
+| `Market` PDA | `Axy4um2WmvEsWLTNqWJabQu8GTX1AcRPrNLHNekPSFNj` |
+| Bond mint used | `F3wuUjqaXVByoaV5vryqgziGxqbrHxYNw3P2wckrsS7Q`, Token-2022 |
+
+The bond mint above is a throwaway devnet test token. It is not a BAZR token, it has no
+value, and nothing about it should be read as a launch.
+
