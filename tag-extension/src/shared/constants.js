@@ -150,10 +150,14 @@ export const MAX_CONCURRENCY = 4;                   // ceiling on API requests i
 /**
  * Request timeout.
  *
- * A request that hangs holds a slot in the queue for as long as it hangs, so this
- * is never unbounded.
+ * [measured 2026-08-18, production] The first lookup of a mint the server has not cached has to
+ * read the chain and is slow. Same mint, measured three times against api.bazr.market:
+ *   1st 25.9s (200) / 2nd 0.31s / 3rd 0.33s  <- only the first is slow, the rest are cache hits
+ * The old 12s value cut that first lookup off **in the middle of a healthy response** and turned
+ * it into a timeout: the server was fine, but from the user's side it looked unreachable.
+ * 30s leaves headroom over the 26s observed. Never unbounded, though -- that would stall the queue.
  */
-export const REQUEST_TIMEOUT_MS = 12000;
+export const REQUEST_TIMEOUT_MS = 30000;
 export const RECENT_LIMIT = 5;
 
 export const STORAGE_KEYS = {

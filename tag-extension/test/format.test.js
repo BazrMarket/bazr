@@ -224,10 +224,14 @@ test('formatUtc: always prints in UTC, and passes the raw value through when it 
 
 // --- timeout ----------------------------------------------------------------
 
-test('the request timeout is bounded at both ends', () => {
-  // Too short and a slow but healthy response is cut off, which reads to the user
-  // as "the API is unreachable" rather than "this one is taking a while".
-  assert.ok(REQUEST_TIMEOUT_MS >= 5_000, 'too short a timeout cuts off a healthy response');
+test('the request timeout outlasts a cold lookup in production', () => {
+  // [measured 2026-08-18] first lookup of a mint with an empty cache = 25.9s (200), then 0.31s / 0.33s.
+  // Set it to 12s and a perfectly good response gets cut off, which looks like "the API is unreachable".
+  const OBSERVED_COLD_MS = 25_900;
+  assert.ok(
+    REQUEST_TIMEOUT_MS > OBSERVED_COLD_MS,
+    `timeout ${REQUEST_TIMEOUT_MS}ms is shorter than the measured cold lookup of ${OBSERVED_COLD_MS}ms`,
+  );
   // It must not be an unbounded wait either -- that stalls the queue
   assert.ok(REQUEST_TIMEOUT_MS <= 60_000, 'too long a timeout stalls the queue');
 });
