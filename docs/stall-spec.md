@@ -487,3 +487,21 @@ Supporting addresses for that run, all on devnet:
 The bond mint above is a throwaway devnet test token. It is not a BAZR token, it has no
 value, and nothing about it should be read as a launch.
 
+## 11. Not implemented, and open questions
+
+Listed here rather than invented elsewhere.
+
+| Item | Status |
+|---|---|
+| `set_stall_uri` on devnet | **In the source, not in the deployment.** The devnet program and its on-chain IDL account carry the other ten instructions; this one has not been deployed, so calling it against the deployed program fails |
+| Mainnet deployment | **Not deployed.** It requires explicit approval from the project owner, and no preparation is done before that approval |
+| Operating values for `stall_bond_amount` and `slash_bps` | Arguments to `initialize_market`. The mainnet values are not decided |
+| Authority key custody, whether it becomes a multisig | Undecided. The fact that resolution authority sits with a single key is stated plainly in 6.1 |
+| The resolution criterion, what makes a listing `Survived` | **Off chain.** The program records the authority's ruling and does not define the basis for it |
+| `reason_code` vocabulary for slashes | Off chain. The program stores the byte and attaches no meaning to it |
+
+The fourth row is the largest open item in the design, and it deserves to be read as more
+than a gap in a table. **The program records a ruling; it does not justify one.**
+Until the criterion is published, the authority-only design of `resolve_listing` reads as
+"only we decide" rather than "nobody can rig their own record", and those are very
+different claims to be making with the same code.
