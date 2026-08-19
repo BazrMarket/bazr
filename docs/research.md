@@ -433,3 +433,17 @@ reader has to guess which claims are load bearing.
 Every row above is absorbed either as an explicit unknown state or as reduced
 label confidence. None of them is presented anywhere in the specification as an
 established fact.
+
+## 9. When these figures were read
+
+Survey date: **2026-08-18**. Every on-chain figure quoted above was read on that
+day, against the source named beside it.
+
+The numbers move. Graduation rates, pool depths and holder counts are all time
+dependent, which is why the specification hard-codes none of them: it observes
+them at runtime and records what it saw. This document is the evidence that the
+axes were chosen against something real, not a table of constants to copy.
+
+A reader checking these figures later should expect different values. The claim
+being made is about the shape of the relationship -- which direction an axis
+moves and roughly how fast -- not about the level on any particular day.
