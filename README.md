@@ -106,8 +106,15 @@ caller can see how much of the picture was actually observed.
 Here is that rule on live data. Wrapped SOL, from the deployed service:
 
 ```bash
-curl -s https://api.bazr.market/relic/So11111111111111111111111111111111111111112
+curl -s --retry 2 --retry-connrefused \
+  https://api.bazr.market/relic/So11111111111111111111111111111111111111112
 ```
+
+The service sleeps when idle, so the first call after a quiet spell can stall or
+fail outright before it answers. Measured on 2026-08-19: this exact request
+failed on the first attempt, then returned 200 in 0.38s on the retry, and
+`/relic/<mint>/tags` took 27.4s from cold. The `--retry` flags above absorb that.
+One failure is a cold start, not an outage.
 
 ```text
 score    71          verdict  dormant
@@ -348,10 +355,14 @@ The wire format is specified in [`docs/api-contract.md`](docs/api-contract.md)
 and is stable enough to code against directly:
 
 ```bash
-curl -s https://api.bazr.market/relic/<mint>
-curl -s https://api.bazr.market/relic/<mint>/tags
-curl -s https://api.bazr.market/market/stats
+curl -s --retry 2 --retry-connrefused https://api.bazr.market/relic/<mint>
+curl -s --retry 2 --retry-connrefused https://api.bazr.market/relic/<mint>/tags
+curl -s --retry 2 --retry-connrefused https://api.bazr.market/market/stats
 ```
+
+The `--retry` flags are not decoration. The service sleeps when idle and the
+first call can fail before it answers; see the cold-start note above for the
+measured numbers.
 
 Every scored response carries `axes` with a per-axis `status`, `weight`, and
 `detail`; the `sources` that produced each observation and when they were
