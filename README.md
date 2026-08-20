@@ -245,13 +245,17 @@ wallet `FrEmSWh1WSb4P44yX1mUmK4Gr6n6mF2tmzSUwuwn2BT8`:
 | What | Signature | Slot |
 | --- | --- | --- |
 | Deploy | `2FFi9hNjjM3cthjn36u1Qj4QgjbkxD7mW278stPmrPV9Nv7oesKt2ZpdU3uKFxzqqSoCpymEwpwrHCUzZFSPNb37` | 440413853 |
-| Close IDL account | `38dDsxbiuEXs...` | 440414742 |
-| Close program | `3f6L7pxaScos...` | 440414746 |
+| Close IDL account | `38dDsxbiuEXspW54qzgHSY3q3oAweXXkm9EJ7ey4U4S8hMqiGRMWEBEWvjKBVsAcWQUgciSpvUQmWtuz8njNEXeH` | 440414742 |
+| Close program | `3f6L7pxaScosoMpPcKUjjALSeDr8GuGscmLv7nnYYfYXAUsnAjRH4EFKpEm6ettFc6rt2gJYi8roMkAujXhS9P8H` | 440414746 |
 
-The rent came back in full -- 3.2397756 SOL from the program account and
-0.0720917 SOL from the IDL account. Roughly 0.0035 SOL was spent, all of it
-transaction fees. The wallet is the project's own; no user ever sent anything
-to it.
+Most of the rent came back to that wallet: 3.2397706 SOL released by the
+`ProgramData` account and 0.0720867 SOL by the IDL account, 3.3118573 SOL
+together. It did not all come back. The 36-byte program account still exists,
+so the 0.0011414 SOL of rent holding it open is still on mainnet and stays
+there while the address is occupied. The whole episode cost roughly 0.0036 SOL
+-- about 0.0024 SOL of transaction fees across 482 signatures from that wallet,
+most of them buffer writes during the deploy, plus that stranded 0.0011414 SOL.
+The wallet is the project's own; no user ever sent anything to it.
 
 What remains at that address on mainnet is a 36-byte `Program` stub whose
 `ProgramData` account no longer exists, so **it cannot execute**. Reading the
