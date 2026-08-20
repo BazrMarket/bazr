@@ -21,6 +21,21 @@
   <a href="https://x.com/bazrmarket"><img src="https://img.shields.io/badge/X-%40bazrmarket-000000?style=flat-square&logo=x&logoColor=white" alt="X"></a>
 </p>
 
+**BAZR token contract address, Solana mainnet-beta:**
+
+```
+7YhmLtcwtqdTkoGZWMJ7AkQzoFdUJK4FTEk6b1gpump
+```
+
+Token-2022 mint, 6 decimals, fixed supply of 1,000,000,000. Mint authority and
+freeze authority are both revoked, so no further supply can be minted and no
+account can be frozen. Both facts are readable straight off the chain on
+[solscan.io](https://solscan.io/token/7YhmLtcwtqdTkoGZWMJ7AkQzoFdUJK4FTEk6b1gpump) and
+[solana.fm](https://solana.fm/address/7YhmLtcwtqdTkoGZWMJ7AkQzoFdUJK4FTEk6b1gpump).
+
+The Anchor program linked in the badges above is a different address and is
+deployed to devnet only. The two are not interchangeable.
+
 ---
 
 BAZR is an aftermarket for Solana meme tokens that already graduated from a
