@@ -325,7 +325,7 @@ placeholder.
   "stalls": 0,
   "aftermarket_volume_usd": null,
   "crates_live": 0,
-  "anchor_version": "0.31.1",
+  "anchor_version": "0.31.1",      // describes the deployment; ships and vanishes with program_cluster
   "data_cluster": "mainnet",       // chain the scored tokens are read from
   "program_cluster": "devnet"      // chain the Anchor program is deployed on
 }
@@ -344,9 +344,16 @@ header comes to advertise a devnet program as running on mainnet.
 is deployed**: with no deployment there is no cluster to name. Clients treat it
 as an optional field. Do not substitute a default for it, and in particular
 never fill it in from `data_cluster` — that substitution produces exactly the
-false claim this split exists to prevent. `anchor_version` describes the same
-deployment, so a client that has no `program_cluster` has nothing for that
-version string to be about either.
+false claim this split exists to prevent.
+
+**`anchor_version` is absent in exactly the same case, and the service is what
+drops it.** It answers "which Anchor built the deployed program", so left on its
+own it asserts that a deployed program exists: a trust band showing
+`Anchor 0.31.1` with no cluster beside it reads as one that is running
+somewhere. Rather than ask every client to remember the pairing, one condition
+in the service removes both keys together. **The two are always present
+together or absent together**, and a client that sees `anchor_version` without
+`program_cluster` is looking at a bug rather than at a deployment.
 
 ## Endpoints that will not exist
 
