@@ -9,7 +9,7 @@
   <a href="https://github.com/BazrMarket/bazr/blob/main/LICENSE"><img src="https://img.shields.io/github/license/BazrMarket/bazr?label=license&style=flat-square&color=C8A87C" alt="License"></a>
   <a href="https://github.com/BazrMarket/bazr/commits/main"><img src="https://img.shields.io/github/last-commit/BazrMarket/bazr?label=last%20commit&style=flat-square&color=6E7076" alt="Last commit"></a>
   <a href="https://www.anchor-lang.com/"><img src="https://img.shields.io/badge/anchor-0.31.1-1F6FB2?style=flat-square" alt="Anchor 0.31.1"></a>
-  <a href="https://explorer.solana.com/address/FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb?cluster=devnet"><img src="https://img.shields.io/badge/solana-devnet%20only-D9B85C?style=flat-square&logo=solana&logoColor=white" alt="Solana devnet only"></a>
+  <a href="#the-on-chain-program"><img src="https://img.shields.io/badge/solana-no%20live%20deployment-D9B85C?style=flat-square&logo=solana&logoColor=white" alt="No live Solana deployment"></a>
   <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/rust-2021-E8452F?style=flat-square&logo=rust&logoColor=white" alt="Rust 2021"></a>
 </p>
 
@@ -33,8 +33,8 @@ account can be frozen. Both facts are readable straight off the chain on
 [solscan.io](https://solscan.io/token/7YhmLtcwtqdTkoGZWMJ7AkQzoFdUJK4FTEk6b1gpump) and
 [solana.fm](https://solana.fm/address/7YhmLtcwtqdTkoGZWMJ7AkQzoFdUJK4FTEk6b1gpump).
 
-The Anchor program linked in the badges above is a different address and is
-deployed to devnet only. The two are not interchangeable.
+The Anchor program described further down is a different address, and it is
+not deployed on any cluster right now. The two are not interchangeable.
 
 ---
 
@@ -172,7 +172,7 @@ the deciding axis wins.
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#F2EFE3', 'primaryTextColor': '#3A3A38', 'primaryBorderColor': '#1F6FB2', 'lineColor': '#1F6FB2', 'secondaryColor': '#C8A87C', 'tertiaryColor': '#D9B85C', 'fontFamily': 'monospace'}}}%%
 graph TD
-  CHAIN["Solana devnet<br/>bazr_market program"]
+  CHAIN["Solana<br/>bazr_market, not deployed"]
   PROG["anchor-program/<br/>stalls, listings, crates, bonds"]
   IDL["idl/bazr_market.json<br/>published interface"]
   IDX["Scoring service<br/>not in this repository"]
@@ -216,8 +216,8 @@ docs/              relic-spec, stall-spec, tag-spec, api-contract,
 
 | Component | State |
 | --- | --- |
-| `anchor-program/` | Eleven instructions, four account types, `Cargo.lock` committed. Deployed to **devnet only** |
-| `idl/` | Produced by `anchor build` from the source in this tree. Matches the deployed program and the IDL account published on devnet -- see below |
+| `anchor-program/` | Eleven instructions, four account types, `Cargo.lock` committed. **Not deployed on any cluster** -- the source is complete, the deployment is gone |
+| `idl/` | Produced by `anchor build` from the source in this tree. The IDL account it was published to on devnet has since been closed -- see below |
 | `tag-extension/` | Builds, tests, and an honesty gate. **Not on the Chrome Web Store** |
 | `docs/` | Complete for the score formula, stall rules, tag rules, API contract, and the research behind the axes |
 | `@bazr/sdk`, `bazr-cli` | In [BazrMarket/bazr-sdk](https://github.com/BazrMarket/bazr-sdk). Build from source; see below |
@@ -234,11 +234,18 @@ exists.
 
 ## The on-chain program
 
-The `bazr_market` program runs on **Solana devnet only. It does not run on
-mainnet**, and no user funds are at risk from it.
+**There is no live `bazr_market` deployment.** The program was closed on
+devnet and on mainnet-beta, both on 2026-08-20, and nothing at either address
+can execute. No user funds were ever at risk from it. What is gone is the
+deployment, not the code: the Rust source, the tests and the committed IDL in
+this repository are untouched and complete, and the program can be rebuilt and
+redeployed from this tree at any time.
 
-Mainnet is not untouched, so here is exactly what happened there. On
-2026-08-20 the program was deployed to mainnet-beta and closed again six
+Neither cluster is untouched either, so here is exactly what happened on each.
+
+### mainnet-beta
+
+On 2026-08-20 the program was deployed to mainnet-beta and closed again six
 minutes later. Three signatures, all signed by the project's own deploy
 wallet `FrEmSWh1WSb4P44yX1mUmK4Gr6n6mF2tmzSUwuwn2BT8`:
 
@@ -257,32 +264,66 @@ there while the address is occupied. The whole episode cost roughly 0.0036 SOL
 most of them buffer writes during the deploy, plus that stranded 0.0011414 SOL.
 The wallet is the project's own; no user ever sent anything to it.
 
-What remains at that address on mainnet is a 36-byte `Program` stub whose
-`ProgramData` account no longer exists, so **it cannot execute**. Reading the
-program ID alone will not tell you this -- query the `ProgramData` address and
-you will get `null`. The only executable `bazr_market` is the devnet one
-described below.
+### devnet
+
+The program had run on devnet since 2026-08-18, and it was closed there on
+2026-08-20 as well. Two signatures, signed by the devnet upgrade authority
+`6QzfMfJa7q3on9fvSiRZuZQoWfCWDLK4nVot4NASxPeg`:
+
+| What | Signature | Slot |
+| --- | --- | --- |
+| Close IDL account | `4CGBfZAwKBb7Wsq5zdWVNYYWNSGJrCX87mxrdXJZXhn9HqHtM1CWBWGS5x9GS4Wp5MhCctRUGSrpmb5S7idpo1UE` | 485678609 |
+| Close program | `4fE2y7GMhC6tpye4r6EiVBf3orU2NRgRri1TXuukDH3scEBkSTY6MMKsJBwncBbkgy4kPHexL87DznmCt4urSNFn` | 485678620 |
+
+The `ProgramData` account released 3.32017752 SOL and the IDL account
+`JAMv36dzMFcKsWEjcid2Q11n9Rdk85AKMwz3H98CpeSt` released 0.06844464 SOL,
+3.38862216 SOL together, all of it back to that authority. As on mainnet it did
+not all come back: the 36-byte program account is still there, so the
+0.00114144 SOL of rent holding it open stays on devnet while the address is
+occupied. The two closing transactions cost 0.00001 SOL in fees between them.
+That wallet is the project's own as well.
+
+### What is left at the address
+
+The same thing on both clusters: a 36-byte `Program` stub whose `ProgramData`
+account no longer exists, so **it cannot execute**. Reading the program ID
+alone will not tell you this -- the stub still reports `executable: true`.
+The `ProgramData` address is derived from the program ID, so it is the same
+`2fLjtAE5SyF5zYxCnPC6To7KJixE7t2qTGbW7UefLRPj` on both chains, and on both
+chains it now returns `null`.
 
 | Field | Value |
 | --- | --- |
 | Program ID | `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` |
-| Cluster | `devnet` |
-| Loader | BPF Upgradeable, `executable = true` |
+| `ProgramData` | `2fLjtAE5SyF5zYxCnPC6To7KJixE7t2qTGbW7UefLRPj` -- absent on both clusters |
+| devnet | closed 2026-08-20 |
+| mainnet-beta | closed 2026-08-20 |
 | Anchor | 0.31.1 |
-| Explorer | [explorer.solana.com/address/FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb?cluster=devnet](https://explorer.solana.com/address/FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb?cluster=devnet) |
 
 Anyone can check that for themselves without trusting this table:
 
 ```bash
-solana account FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb --url devnet
+solana program show FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb --url devnet
+solana program show FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb --url mainnet-beta
 ```
 
-The scoring pipeline and the program are on different clusters on purpose, and
-the API reports both separately rather than collapsing them into one `cluster`
-field: `data_cluster` is `mainnet` because token data is read from mainnet, and
-`program_cluster` is `devnet` because that is where the program lives.
-Collapsing those two would let "reads mainnet" be presented as "deployed on
-mainnet", which is exactly the claim this project refuses to make.
+Both answer `Error: Program FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb has
+been closed`.
+
+Closing a program removes the executable, not the accounts it had written. The
+market PDA `Axy4um2WmvEsWLTNqWJabQu8GTX1AcRPrNLHNekPSFNj` and the stall and
+crate accounts from the devnet run are still readable on devnet. Nothing can
+modify them any more, because there is no program left to run.
+
+The scoring pipeline and the program were on different clusters on purpose, and
+the API reports them as two separate fields rather than collapsing them into
+one `cluster`: `data_cluster` says which chain token data is read from, and
+`program_cluster` says which chain the program is deployed on. With no
+deployment there is no cluster to name, so **`program_cluster` is now absent
+from the API response entirely** -- absent, not `null`, and never filled in
+from `data_cluster`. Collapsing those two would let "reads mainnet" be
+presented as "deployed on mainnet", which is exactly the claim this project
+refuses to make.
 
 ### A stall's losses are stored the same way as its wins
 
@@ -298,8 +339,9 @@ a stall cannot grade its own calls.
 
 The API returns those two counters as raw numbers and deliberately exposes **no
 pre-computed win rate**, because a single ratio is the easiest place for a bad
-record to hide behind its denominator. The stall currently on devnet reads
-`resolved_wins 2 / resolved_losses 1`, and both halves of that are on chain.
+record to hide behind its denominator. The stall written during the devnet run
+reads `resolved_wins 2 / resolved_losses 1`, and both halves of that are still
+on chain -- the close removed the program, not the accounts it had written.
 
 See [`docs/stall-spec.md`](docs/stall-spec.md) for the full account layout and
 the bond and slash rules.
@@ -340,27 +382,32 @@ client can be built against it without trusting us. CI checks exactly that on
 every push, comparing the program ID and the instruction, account, event and
 error names in the committed IDL against the Rust source.
 
-### Four places describe this program, and they agree
+### Four places described this program, and they agreed
 
-An ABI is only useful if every copy of it says the same thing. Four copies exist,
-so all four are worth checking rather than trusting one.
+An ABI is only useful if every copy of it says the same thing. Four copies
+existed while the program was deployed. Two of them were on chain and were
+closed on 2026-08-20, so **only the two in this repository can still be checked
+today.** Saying "they agree" about copies a reader can no longer fetch would be
+asking for trust, so the table says which is which.
 
 | Where | Instructions | How to check it yourself |
 | --- | --- | --- |
 | Rust source in this tree | 11 | `grep 'pub fn' anchor-program/programs/bazr-market/src/lib.rs` |
 | Committed [`idl/bazr_market.json`](idl/bazr_market.json) | 11 | `jq '.instructions \| length' idl/bazr_market.json` |
-| Program deployed to devnet | 11 | see the transaction below |
-| IDL account published on devnet | 11 | `anchor idl fetch FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` |
+| Program that ran on devnet | 11 | closed 2026-08-20 -- not fetchable any more |
+| IDL account published on devnet | 11 | closed 2026-08-20 -- `anchor idl fetch` now fails |
 
-Counting instructions is the weak version of this check: two copies can hold the
-same number and still differ. Compare the content instead --
-`anchor idl fetch` against `idl/bazr_market.json`, normalised and hashed -- and
-a client that reads its ABI from the chain gets the same `set_stall_uri` and
-`StallUriUpdated` this repository documents.
+Counting instructions is the weak version of this check anyway: two copies can
+hold the same number and still differ. While the IDL account existed, the
+content comparison was the real one -- `anchor idl fetch` against
+`idl/bazr_market.json`, normalised and hashed -- and a client reading its ABI
+from the chain got the same `set_stall_uri` and `StallUriUpdated` this
+repository documents.
 
-`set_stall_uri` is deployed and has been executed. The transaction is
+`set_stall_uri` was deployed and executed on devnet, and that transaction is
+still on chain even though the program is not. It is
 `5Ez13hJnUG6qxNcB2Wu9BrViXhf4khe2t6LnX9c8RXLg7Ba1MUkCRGmTzg9wKJqp3qRyxUaJ8DrT7r6ZxeJWvVCi`,
-and its log carries `Program log: Instruction: SetStallUri` followed by
+and its log still carries `Program log: Instruction: SetStallUri` followed by
 `success`:
 
 ```bash

@@ -18,7 +18,7 @@ opening a pull request against something that is somewhere else entirely.
 
 | Path | What it is | State |
 |---|---|---|
-| `anchor-program/` | The `bazr-market` Anchor program: stall registry, listing ledger, bond escrow, crate vault. | Deployed on devnet at `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb`. One full cycle -- open a stall, list, resolve one listing each way, create and rebalance and freeze a crate -- has been run against devnet as real transactions. Not on mainnet. |
+| `anchor-program/` | The `bazr-market` Anchor program: stall registry, listing ledger, bond escrow, crate vault. | **Not deployed on any cluster.** It ran on devnet at `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` from 2026-08-18 and was closed there on 2026-08-20, the same day it was deployed to mainnet-beta and closed again six minutes later. One full cycle -- open a stall, list, resolve one listing each way, create and rebalance and freeze a crate -- did run against devnet as real transactions before the close. |
 | `tag-extension/` | BAZR Tag, a Manifest V3 Chrome extension that overlays a price tag on mint addresses. | Complete and buildable. 203 unit tests. Not on the Chrome Web Store; it is loaded unpacked. |
 | `docs/` | Relic specification, stall specification, tag specification, API contract, architecture, threat model, sourcing research. | Written, and they are the reference the code is measured against. |
 | `idl/bazr_market.json` | The generated IDL for the deployed program, committed so a client can be built without running `anchor build` first. | Matches the source. CI proves it on every push. |
@@ -102,9 +102,10 @@ What the account layouts are protecting, and what a review will ask about:
 
 - **Losses are stored exactly like wins.** `resolved_wins` and `resolved_losses`
   are both `u32`, `reputation` is signed, and a resolution moves reputation by
-  the same magnitude either way. On devnet the deployed stall currently reads
-  `RESOLVED_WINS 2 / RESOLVED_LOSSES 1`, and both numbers are meant to be equally
-  easy to read. A schema that counts only success cannot be repaired later by an
+  the same magnitude either way. The stall written during the devnet run reads
+  `RESOLVED_WINS 2 / RESOLVED_LOSSES 1` -- still readable on devnet, since closing
+  the program did not remove the accounts it wrote -- and both numbers are meant
+  to be equally easy to read. A schema that counts only success cannot be repaired later by an
   interface, so the constraint lives in the account.
 - **Nothing is deallocated.** A listing is marked `Withdrawn` rather than closed,
   and a stall account survives `close_stall`, because the PDA is derived from the

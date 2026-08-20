@@ -2,9 +2,13 @@
 
 The on-chain half of BAZR. Anchor 0.31.1 / Solana.
 
-The program is deployed on **devnet only**. Address
-[`FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb`](https://explorer.solana.com/address/FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb?cluster=devnet),
-and the generated IDL is committed to this repository at
+The program is **not deployed on any cluster.** It ran on devnet from 2026-08-18 and was
+closed there on 2026-08-20 -- the same day it was deployed to mainnet-beta and closed
+again six minutes later. The closing signatures are in the
+[repository README](../README.md#the-on-chain-program). `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb`
+still holds a 36-byte stub on both chains, and neither can execute.
+
+The source below is complete and the generated IDL is committed to this repository at
 [`../idl/bazr_market.json`](../idl/bazr_market.json), so a client can be built without
 running `anchor build` first.
 
@@ -81,11 +85,12 @@ toolchain the build does not run at all. `anchor test` starts a local validator 
 meant for localnet only, so pass `--provider.cluster localnet` explicitly rather than
 inheriting whatever cluster the machine's `solana config` currently points at.
 
-## Devnet
+## Deploying it yourself
 
 The program keypair is not committed, so `anchor build` in a fresh clone mints a new one
 and a deploy made from it lands at a **different** address than the one listed below. The
-address below is the deployment this repository's authors made.
+address below is the devnet deployment this repository's authors made, which has since
+been closed. These commands stand up your own; they are not a route to ours.
 
 ```bash
 anchor build
@@ -109,14 +114,16 @@ npx ts-node scripts/verify-devnet.ts
 
 | | |
 |---|---|
-| Program ID | `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` |
-| On-chain IDL | `JAMv36dzMFcKsWEjcid2Q11n9Rdk85AKMwz3H98CpeSt` (ten instructions -- one behind this source) |
-| Market PDA (devnet) | `Axy4um2WmvEsWLTNqWJabQu8GTX1AcRPrNLHNekPSFNj` |
-| Devnet test bond mint | `F3wuUjqaXVByoaV5vryqgziGxqbrHxYNw3P2wckrsS7Q` (Token-2022) |
+| Program ID | `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` -- closed, 36-byte stub only |
+| On-chain IDL | `JAMv36dzMFcKsWEjcid2Q11n9Rdk85AKMwz3H98CpeSt` -- recorded here as ten instructions, one behind this source; closed 2026-08-20, the account is gone |
+| Market PDA (devnet) | `Axy4um2WmvEsWLTNqWJabQu8GTX1AcRPrNLHNekPSFNj` -- still readable |
+| Devnet test bond mint | `F3wuUjqaXVByoaV5vryqgziGxqbrHxYNw3P2wckrsS7Q` (Token-2022) -- still there |
 
 Every address in that table is on devnet; append `?cluster=devnet` when opening any of
-them in an explorer. The bond mint is a throwaway devnet test token. It has no value, and
-nothing about it should be read as a launch.
+them in an explorer. Closing a program removes the executable, not the accounts it had
+written, so the PDAs are still readable and nothing can change them any more. The bond
+mint is a throwaway devnet test token. It has no value, and nothing about it should be
+read as a launch.
 
 Mainnet is not deployed and must not be prepared. It needs explicit user
 approval **and** a launched token CA, because the market config stores the bond

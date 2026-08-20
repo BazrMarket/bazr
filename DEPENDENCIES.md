@@ -97,7 +97,7 @@ entitled to distrust everything above.
 
 | Item | Actual state |
 |---|---|
-| **Mainnet deployment** | **Not deployed.** The program is on devnet only, at `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb`. A mainnet deployment needs explicit owner approval and a launched bond mint, because `initialize_market` writes that mint into the config and changing it afterwards means redeploying. |
+| **Deployment** | **Not deployed on any cluster.** `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb` was closed on devnet and on mainnet-beta on 2026-08-20; a 36-byte stub remains on each and cannot execute. Redeploying to mainnet needs explicit owner approval and a launched bond mint, because `initialize_market` writes that mint into the config and changing it afterwards means redeploying. |
 | **Security audit** | **None.** No third party has reviewed the program. `docs/security.md` is the maintainers' own threat model, not an audit report. |
 | **Verifiable build attestation** | **None published.** An upgradeable program can be replaced by whoever holds the upgrade authority, so reading this source does not bind the binary currently deployed at that address. |
 | **Rust unit tests in the program** | **None.** There is no `#[cfg(test)]` module anywhere under `programs/`. The program's test suite is `anchor-program/tests/bazr-market.ts`, run by `anchor test --provider.cluster localnet`, which needs the Anchor toolchain and a local validator and is therefore not in CI. What CI runs against the program is `cargo fmt --all --check` and `cargo check --all-targets --locked`. |
@@ -137,8 +137,8 @@ that quietly means two different things cannot be argued about at all.
 **Failure is recorded at the same size as success, in the layout.** A stall
 owner's losses sit beside their wins as the same type, reputation is signed so a
 curator who is wrong more often than right goes negative, and a slash is a
-permanent mark rather than a resettable counter. The devnet deployment already
-carries a loss as well as wins, which is the point: the record has to be able to
-show one. This lives in the account struct rather than in an interface component,
+permanent mark rather than a resettable counter. The devnet run already recorded
+a loss as well as wins, and those accounts still carry it, which is the point: the
+record has to be able to show one. This lives in the account struct rather than in an interface component,
 because that is the level at which it cannot be quietly removed later. None of it
 makes the product friendlier. It is the part that makes the score worth reading.

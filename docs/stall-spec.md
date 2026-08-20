@@ -15,9 +15,11 @@ Scope split, so nothing is specified twice:
 | How is a relic score derived from observation? | [`./relic-spec.md`](./relic-spec.md) |
 | What do the label strings mean? | [`./tag-spec.md`](./tag-spec.md) |
 
-**Deployment status: devnet only.** The program is
+**Deployment status: not deployed on any cluster.** The program is
 `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb`, declared in `lib.rs` and pinned for
-`localnet` and `devnet` in `Anchor.toml`. Mainnet is not deployed. Deploying it requires
+`localnet` and `devnet` in `Anchor.toml`. It ran on devnet from 2026-08-18 and was closed
+there on 2026-08-20, the same day it was deployed to mainnet-beta and closed again six
+minutes later; the closing signatures are in the repository README. Deploying it requires
 explicit approval from the project owner and a launched bond mint, because
 `initialize_market` writes that mint into the config and changing it afterwards means
 redeploying. A declared program ID is an address a program was built against, not proof
@@ -456,7 +458,9 @@ record with that stall's listings. The full shape is in
 ## 10. Devnet verification, 2026-08-18
 
 One full cycle executed as real transactions on devnet, then read back from the chain with
-`anchor-program/scripts/verify-devnet.ts`.
+`anchor-program/scripts/verify-devnet.ts`. The program was closed on 2026-08-20, so no
+further cycle can run against it; closing a program does not remove the accounts it wrote,
+so everything below is still readable on devnet and nothing can change it.
 
 **These numbers are test data we generated ourselves. They are not user activity, and they
 must never be quoted anywhere as usage.**
@@ -493,7 +497,7 @@ Listed here rather than invented elsewhere.
 
 | Item | Status |
 |---|---|
-| `set_stall_uri` on devnet | **In the source, not in the deployment.** The devnet program and its on-chain IDL account carry the other ten instructions; this one has not been deployed, so calling it against the deployed program fails |
+| `set_stall_uri` on chain | **It was deployed and executed on devnet** in transaction `5Ez13hJnUG6qxNcB2Wu9BrViXhf4khe2t6LnX9c8RXLg7Ba1MUkCRGmTzg9wKJqp3qRyxUaJ8DrT7r6ZxeJWvVCi`, slot 485276755, `err` null, log `Instruction: SetStallUri` then `success`. The program and its on-chain IDL account were both closed on 2026-08-20, so neither can be re-fetched; the committed `idl/bazr_market.json` is the copy that remains |
 | Mainnet deployment | **Not deployed.** It requires explicit approval from the project owner, and no preparation is done before that approval |
 | Operating values for `stall_bond_amount` and `slash_bps` | Arguments to `initialize_market`. The mainnet values are not decided |
 | Authority key custody, whether it becomes a multisig | Undecided. The fact that resolution authority sits with a single key is stated plainly in 6.1 |

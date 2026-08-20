@@ -19,8 +19,8 @@ Everything here is pre-1.0 and is developed on `main`. Security fixes land on
 
 | Component | Path | Version | Receives security fixes |
 |---|---|---|---|
-| `bazr-market` Anchor program | `anchor-program/` | 0.1.0, deployed on devnet | Yes |
-| Generated IDL | `idl/bazr_market.json` | Matches the deployed program | Yes |
+| `bazr-market` Anchor program | `anchor-program/` | 0.1.0, not deployed on any cluster | Yes |
+| Generated IDL | `idl/bazr_market.json` | Matches the source in this tree | Yes |
 | BAZR Tag browser extension (MV3) | `tag-extension/` | 0.1.0 | Yes |
 | Specifications | `docs/` | Current `main` | Yes |
 | Any earlier commit, or a fork | - | - | No |
@@ -29,10 +29,14 @@ Everything here is pre-1.0 and is developed on `main`. Security fixes land on
 
 ## Deployment status, stated plainly
 
-- **The program is deployed to devnet only.** The address is
-  `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb`. There is no mainnet
-  deployment, so there is no mainnet value at risk today. A report against the
-  program is a report against source and against a devnet deployment.
+- **The program is not deployed on any cluster.** The address is
+  `FSLSR2xYiR5NPWg6g8DZ1KyVRVa7xW37gDStbaDfSXLb`. It ran on devnet from
+  2026-08-18, and it was deployed to mainnet-beta on 2026-08-20 and closed
+  again six minutes later; devnet was closed the same day. The closing
+  signatures are listed in the [README](README.md#the-on-chain-program). What
+  is left on each chain is a 36-byte stub whose `ProgramData` account is gone,
+  so it cannot execute and there is no value at risk from it anywhere today. A
+  report against the program is therefore a report against source.
 - **The program has not been audited.** No third party has reviewed it. Nothing
   in this repository should be read as implying otherwise.
 - **The devnet bond mint is a throwaway test token** with no value. Nothing about
