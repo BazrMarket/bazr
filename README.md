@@ -234,9 +234,30 @@ exists.
 
 ## The on-chain program
 
-The `bazr_market` program is deployed to **Solana devnet only. It is not on
-mainnet.** No mainnet transaction has ever been sent, and no user funds are at
-risk from it.
+The `bazr_market` program runs on **Solana devnet only. It does not run on
+mainnet**, and no user funds are at risk from it.
+
+Mainnet is not untouched, so here is exactly what happened there. On
+2026-08-20 the program was deployed to mainnet-beta and closed again six
+minutes later. Three signatures, all signed by the project's own deploy
+wallet `FrEmSWh1WSb4P44yX1mUmK4Gr6n6mF2tmzSUwuwn2BT8`:
+
+| What | Signature | Slot |
+| --- | --- | --- |
+| Deploy | `2FFi9hNjjM3cthjn36u1Qj4QgjbkxD7mW278stPmrPV9Nv7oesKt2ZpdU3uKFxzqqSoCpymEwpwrHCUzZFSPNb37` | 440413853 |
+| Close IDL account | `38dDsxbiuEXs...` | 440414742 |
+| Close program | `3f6L7pxaScos...` | 440414746 |
+
+The rent came back in full -- 3.2397756 SOL from the program account and
+0.0720917 SOL from the IDL account. Roughly 0.0035 SOL was spent, all of it
+transaction fees. The wallet is the project's own; no user ever sent anything
+to it.
+
+What remains at that address on mainnet is a 36-byte `Program` stub whose
+`ProgramData` account no longer exists, so **it cannot execute**. Reading the
+program ID alone will not tell you this -- query the `ProgramData` address and
+you will get `null`. The only executable `bazr_market` is the devnet one
+described below.
 
 | Field | Value |
 | --- | --- |
