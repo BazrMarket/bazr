@@ -275,13 +275,15 @@ The program had run on devnet since 2026-08-18, and it was closed there on
 | Close IDL account | `4CGBfZAwKBb7Wsq5zdWVNYYWNSGJrCX87mxrdXJZXhn9HqHtM1CWBWGS5x9GS4Wp5MhCctRUGSrpmb5S7idpo1UE` | 485678609 |
 | Close program | `4fE2y7GMhC6tpye4r6EiVBf3orU2NRgRri1TXuukDH3scEBkSTY6MMKsJBwncBbkgy4kPHexL87DznmCt4urSNFn` | 485678620 |
 
-The `ProgramData` account released 3.32017752 SOL and the IDL account
-`JAMv36dzMFcKsWEjcid2Q11n9Rdk85AKMwz3H98CpeSt` released 0.06844464 SOL,
-3.38862216 SOL together, all of it back to that authority. As on mainnet it did
-not all come back: the 36-byte program account is still there, so the
-0.00114144 SOL of rent holding it open stays on devnet while the address is
-occupied. The two closing transactions cost 0.00001 SOL in fees between them.
-That wallet is the project's own as well.
+Most of the rent came back to that wallet. The `ProgramData` account held
+3.32017752 SOL and the IDL account
+`JAMv36dzMFcKsWEjcid2Q11n9Rdk85AKMwz3H98CpeSt` held 0.06844464 SOL, 3.38862216
+SOL between them; 3.38861216 SOL of that landed in the wallet, 0.00001 SOL
+short because each of the two closing transactions paid a 0.000005 SOL fee.
+It did not all come back. The 36-byte program account still exists, so the
+0.00114144 SOL of rent holding it open is still on devnet and stays there while
+the address is occupied. That wallet is the project's own as well; no user ever
+sent anything to it.
 
 ### What is left at the address
 
@@ -298,7 +300,12 @@ chains it now returns `null`.
 | `ProgramData` | `2fLjtAE5SyF5zYxCnPC6To7KJixE7t2qTGbW7UefLRPj` -- absent on both clusters |
 | devnet | closed 2026-08-20 |
 | mainnet-beta | closed 2026-08-20 |
+| Rent still locked up | 0.00114144 SOL on devnet and 0.0011414 SOL on mainnet, one stub each |
 | Anchor | 0.31.1 |
+
+`solana program close` closes the `ProgramData` account and nothing else. The
+`Program` account and the rent keeping it alive stay where they are, on both
+chains, which is why no version of this page says the rent came back in full.
 
 Anyone can check that for themselves without trusting this table:
 
